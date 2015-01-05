@@ -6,7 +6,7 @@ package nl.utwente.wsc.com.model;
  * @author rvemous
  */
 public enum PacketType {
-    COMMAND, MULTCOMMAND, DATA, RESPONSE;
+    COMMAND, DATA, RESPONSE;
                 
     /**
      * Gets the packet type belonging to this byte.
