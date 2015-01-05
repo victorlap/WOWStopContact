@@ -1,7 +1,8 @@
 package nl.utwente.wowstopcontact.communication.model;
 
 import java.util.Arrays;
-import model.model.exception.InvalidPacketException;
+
+import nl.utwente.wowstopcontact.communication.model.exception.InvalidPacketException;
 
 /**
  * PacketHeader implementation for communication with Pi.<br>

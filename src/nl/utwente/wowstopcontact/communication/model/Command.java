@@ -1,6 +1,7 @@
 package nl.utwente.wowstopcontact.communication.model;
 
-import model.model.exception.InvalidPacketException;
+import nl.utwente.wowstopcontact.communication.model.exception.InvalidPacketException;
+
 
 /**
  * A command with possible arguments

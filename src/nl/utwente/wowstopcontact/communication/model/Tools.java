@@ -1,4 +1,4 @@
-package tools;
+package nl.utwente.wowstopcontact.communication.model;
 
 /**
  * Tools holding class.

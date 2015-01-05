@@ -1,5 +1,7 @@
 package nl.utwente.wowstopcontact.communication.controller;
 
+import android.util.Log;
+
 import com.jcraft.jsch.Buffer;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
@@ -9,7 +11,6 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
 import java.net.InetAddress;
 import java.util.Properties;
-import tools.Logger;
 
 /**
  * Sets up and manages the SSH connection.
@@ -61,7 +62,7 @@ public class SshConnection {
             channel = session.openChannel(type);
             channel.connect(timeout);
         } catch (JSchException ex) {
-            Logger.logError(ex);
+            Log.d("WSC", ex.getMessage());
             return null;
         }      
         return channel;

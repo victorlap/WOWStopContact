@@ -1,6 +1,5 @@
 package nl.utwente.wowstopcontact.communication.controller;
 
-import global.Timer;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -9,24 +8,25 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
 import java.util.LinkedList;
+
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
-import model.Command;
-import model.Packet;
-import model.PacketHeader;
-import model.model.exception.InvalidPacketException;
-import tools.Tools;
+
+import nl.utwente.wowstopcontact.communication.model.Command;
+import nl.utwente.wowstopcontact.communication.model.Packet;
+import nl.utwente.wowstopcontact.communication.model.Timer;
+import nl.utwente.wowstopcontact.communication.model.Tools;
 
 /**
  * Client socket implementation.
  *
  * @author rvemous
+ * @param <receiveBuffer>
  */
-public class SocketManager extends java.util.Observable {
+public class SocketManager<receiveBuffer> extends java.util.Observable {
     
     public static final int TIMEOUT = 10000; //ms
     public static final String CONNECTION_DEAD = "DEAD";
@@ -62,7 +62,7 @@ public class SocketManager extends java.util.Observable {
         in = new BufferedInputStream(sock.getInputStream());
         out = new BufferedOutputStream(sock.getOutputStream());
         
-        receiveBuffer = new LinkedList<>();
+        receiveBuffer = new LinkedList<Packet>();
         startReceiverThread();
     }
     
@@ -86,7 +86,7 @@ public class SocketManager extends java.util.Observable {
      * them to any observers.
      */
     private void startReceiverThread() {
-        Thread thread = new Thread(() -> {
+        /*Thread thread = new Thread(() -> {
             byte[] headerbuff = new byte[PacketHeader.HEADER_LENGTH];
             while (!stop) {
                 do {
@@ -138,7 +138,7 @@ public class SocketManager extends java.util.Observable {
         });
         thread.setName("Packet-receiver");
         thread.setDaemon(true);
-        thread.start();
+        thread.start();*/
     }
     
     public Packet waitForPacket(int timeOut) {
