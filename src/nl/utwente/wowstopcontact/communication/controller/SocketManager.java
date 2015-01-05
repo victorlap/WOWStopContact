@@ -1,4 +1,4 @@
-package controller.ssh;
+package nl.utwente.wowstopcontact.communication.controller;
 
 import global.Timer;
 import java.io.BufferedInputStream;

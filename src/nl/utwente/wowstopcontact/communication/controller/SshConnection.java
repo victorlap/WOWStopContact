@@ -1,4 +1,4 @@
-package controller.ssh;
+package nl.utwente.wowstopcontact.communication.controller;
 
 import com.jcraft.jsch.Buffer;
 import com.jcraft.jsch.Channel;

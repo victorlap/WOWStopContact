@@ -1,4 +1,4 @@
-package model;
+package nl.utwente.wowstopcontact.communication.model;
 
 /**
  * The type of packet.
