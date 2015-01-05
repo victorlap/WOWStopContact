@@ -1,4 +1,4 @@
-package model;
+package nl.utwente.wowstopcontact.communication.model;
 
 import java.util.Arrays;
 import java.util.logging.Level;
