@@ -29,7 +29,7 @@ import nl.utwente.wsc.utils.Tools;
  * @author rvemous
  * @param <receiveBuffer>
  */
-public class SocketManager<receiveBuffer> extends java.util.Observable {
+public class SocketManager extends java.util.Observable {
     
     public static final int TIMEOUT = 10000; //ms
     public static final String CONNECTION_DEAD = "DEAD";
