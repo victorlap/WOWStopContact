@@ -1,4 +1,4 @@
-package nl.utwente.wowstopcontact.communication.model;
+package nl.utwente.wsc.com.model;
 
 /**
  * The type of packet.
@@ -6,7 +6,7 @@ package nl.utwente.wowstopcontact.communication.model;
  * @author rvemous
  */
 public enum PacketType {
-    COMMAND, MULTCOMMAND, DATA, RESPONSE;
+    COMMAND, DATA, RESPONSE;
                 
     /**
      * Gets the packet type belonging to this byte.

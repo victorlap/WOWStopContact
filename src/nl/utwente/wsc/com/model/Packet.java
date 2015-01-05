@@ -1,10 +1,10 @@
-package nl.utwente.wowstopcontact.communication.model;
+package nl.utwente.wsc.com.model;
 
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import nl.utwente.wowstopcontact.communication.model.exception.InvalidPacketException;
+import nl.utwente.wsc.com.model.exception.InvalidPacketException;
 
 /**
  * Packet implementation
@@ -77,13 +77,6 @@ public class Packet {
                     sb.append(new Command(new String(data)));
                     sb.append(", ");
                     break;
-                case MULTCOMMAND:
-                    String[] commands = new String(data).split(";");
-                    for (String comm : commands) {
-                        sb.append(new Command(comm));
-                        sb.append(", ");
-                    }
-                    break;
                 case DATA:
                     sb.append(Arrays.toString(data));
                     sb.append(", ");
@@ -106,16 +99,6 @@ public class Packet {
        byte[] commandBytes = command.toSendableCommand().getBytes();
        PacketHeader header = new PacketHeader(PacketType.COMMAND, commandBytes.length);
        return new Packet(header, commandBytes);
-    }
-    
-    public static Packet createMultiCommandPacket(Command... commands) {
-       StringBuilder sb = new StringBuilder(commands[0].toSendableCommand());
-       for (int i = 1; i < commands.length; i++) {
-           sb.append(";");
-           sb.append(commands[i].toSendableCommand());    
-       }
-       PacketHeader header = new PacketHeader(PacketType.MULTCOMMAND, sb.length());
-       return new Packet(header, sb.toString().getBytes());
     }
     
     public static Packet createDataPacket(byte[] data) {
@@ -147,25 +130,6 @@ public class Packet {
             return false;
         }
         return packet.getHeader().getPacketType().equals(PacketType.DATA);
-    }
-    
-    // for testing only
-    public static void main(String[] args) {
-        Packet p1 = new Packet();
-        String comms = "Go-1-2-3;NoGo-3-2-1;Ho;Ho-8";
-        Packet p2 = new Packet(new PacketHeader(PacketType.MULTCOMMAND, comms.length()), comms.getBytes());
-        System.out.println(p1);
-        System.out.println(p2);
-        try {
-            System.out.println(new Packet(p1.toSendablePacket()));
-        } catch (InvalidPacketException ex) {
-            ex.printStackTrace();
-        }
-        try {
-            System.out.println(new Packet(p2.toSendablePacket()));
-        } catch (InvalidPacketException ex) {
-            ex.printStackTrace();
-        }
     }
     
 }

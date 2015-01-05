@@ -1,4 +1,4 @@
-package nl.utwente.wowstopcontact.communication.model;
+package nl.utwente.wsc.utils;
 
 
 import java.io.BufferedOutputStream;

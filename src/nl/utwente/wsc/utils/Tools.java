@@ -1,4 +1,4 @@
-package nl.utwente.wowstopcontact.communication.model;
+package nl.utwente.wsc.utils;
 
 /**
  * Tools holding class.
@@ -14,18 +14,6 @@ public class Tools {
      * @param sleepTime time to sleep
      */
     public static void waitForMs(long sleepTime) {
-        try {
-            Thread.sleep(sleepTime);
-        } catch (InterruptedException e) {}
-    }
-    
-    /**
-     * Waits for the specified time in milliseconds.<br>
-     * It can be interrupted.
-     * 
-     * @param sleepTime time to sleep
-     */
-    public static void waitForMs2(long sleepTime) {
         try {
             Thread.sleep(sleepTime);
         } catch (InterruptedException e) {}

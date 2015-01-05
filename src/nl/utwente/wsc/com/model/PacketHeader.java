@@ -1,8 +1,8 @@
-package nl.utwente.wowstopcontact.communication.model;
+package nl.utwente.wsc.com.model;
 
 import java.util.Arrays;
 
-import nl.utwente.wowstopcontact.communication.model.exception.InvalidPacketException;
+import nl.utwente.wsc.com.model.exception.InvalidPacketException;
 
 /**
  * PacketHeader implementation for communication with Pi.<br>
@@ -14,8 +14,8 @@ import nl.utwente.wowstopcontact.communication.model.exception.InvalidPacketExce
  */
 public class PacketHeader {
 
-    public static final int HEADER_LENGTH = 6; //bytes
-    private static final byte[] START_BYTES = new byte[]{80, 73}; // "PI" in ASCII
+    public static final int HEADER_LENGTH = 7; //bytes
+    private static final byte[] START_BYTES = new byte[]{87, 83, 67}; // "WSC" in ASCII
     
     private PacketType packetType;
     private int packetLength;

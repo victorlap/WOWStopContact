@@ -1,4 +1,7 @@
-package nl.utwente.wowstopcontact.communication.controller;
+package nl.utwente.wsc.com.controller;
+
+import java.net.InetAddress;
+import java.util.Properties;
 
 import android.util.Log;
 
@@ -9,8 +12,6 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Packet;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
-import java.net.InetAddress;
-import java.util.Properties;
 
 /**
  * Sets up and manages the SSH connection.

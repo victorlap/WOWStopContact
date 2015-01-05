@@ -1,4 +1,4 @@
-package nl.utwente.wowstopcontact.communication.controller;
+package nl.utwente.wsc.com.controller;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.LinkedList;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
@@ -15,10 +16,12 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
-import nl.utwente.wowstopcontact.communication.model.Command;
-import nl.utwente.wowstopcontact.communication.model.Packet;
-import nl.utwente.wowstopcontact.communication.model.Timer;
-import nl.utwente.wowstopcontact.communication.model.Tools;
+import nl.utwente.wsc.com.model.Command;
+import nl.utwente.wsc.com.model.Packet;
+import nl.utwente.wsc.com.model.PacketHeader;
+import nl.utwente.wsc.com.model.exception.InvalidPacketException;
+import nl.utwente.wsc.utils.Timer;
+import nl.utwente.wsc.utils.Tools;
 
 /**
  * Client socket implementation.
@@ -86,59 +89,63 @@ public class SocketManager<receiveBuffer> extends java.util.Observable {
      * them to any observers.
      */
     private void startReceiverThread() {
-        /*Thread thread = new Thread(() -> {
-            byte[] headerbuff = new byte[PacketHeader.HEADER_LENGTH];
-            while (!stop) {
-                do {
-                    try {
-                        headerbuff[0] = (byte) in.read();
-                    } catch (IOException ex) {
-                        //notifyObserversSetchanged(CONNECTION_DEAD);
-                        ex.printStackTrace();
-                        stop = true;
-                        continue;
-                    }
-                    Tools.waitForMs2(50);
-                } while (!stop && headerbuff[0] == -1);
-                try {
-                    in.read(headerbuff, 1, headerbuff.length - 1);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                    stop = true;
-                    //notifyObserversSetchanged(CONNECTION_DEAD);
-                    continue;                  
-                }
-                PacketHeader header = null;
-                try {
-                    header = new PacketHeader(headerbuff);
-                } catch (InvalidPacketException ex) {
-                    System.out.println("Got invalid header: " + 
-                            Arrays.toString(headerbuff));
-                    continue;
-                }
-                int len = header.getPacketLength();
-                //System.out.println(header.toString());
-                byte[] receiverBuff = new byte[len];
-                int i = 0;
-                try {
-                    while (i < len && 
-                            (i += in.read(receiverBuff, i, len - i)) != -1){}
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                    stop = true;
-                    //notifyObserversSetchanged(CONNECTION_DEAD);
-                    continue;
-                }
-                Packet packet = new Packet(header, receiverBuff);
-                //synchronized (lock) {
-                    receiveBuffer.add(packet);
-                //}
-                //System.out.println("Got packet: " + packet.toString());
-            }
-        });
+    	Thread thread = new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				byte[] headerbuff = new byte[PacketHeader.HEADER_LENGTH];
+	            while (!stop) {
+	                do {
+	                    try {
+	                        headerbuff[0] = (byte) in.read();
+	                    } catch (IOException ex) {
+	                        //notifyObserversSetchanged(CONNECTION_DEAD);
+	                        ex.printStackTrace();
+	                        stop = true;
+	                        continue;
+	                    }
+	                    Tools.waitForMs(50);
+	                } while (!stop && headerbuff[0] == -1);
+	                try {
+	                    in.read(headerbuff, 1, headerbuff.length - 1);
+	                } catch (IOException ex) {
+	                    ex.printStackTrace();
+	                    stop = true;
+	                    //notifyObserversSetchanged(CONNECTION_DEAD);
+	                    continue;                  
+	                }
+	                PacketHeader header = null;
+	                try {
+	                    header = new PacketHeader(headerbuff);
+	                } catch (InvalidPacketException ex) {
+	                    System.out.println("Got invalid header: " + 
+	                            Arrays.toString(headerbuff));
+	                    continue;
+	                }
+	                int len = header.getPacketLength();
+	                //System.out.println(header.toString());
+	                byte[] receiverBuff = new byte[len];
+	                int i = 0;
+	                try {
+	                    while (i < len && 
+	                            (i += in.read(receiverBuff, i, len - i)) != -1){}
+	                } catch (IOException ex) {
+	                    ex.printStackTrace();
+	                    stop = true;
+	                    //notifyObserversSetchanged(CONNECTION_DEAD);
+	                    continue;
+	                }
+	                Packet packet = new Packet(header, receiverBuff);
+	                //synchronized (lock) {
+	                    receiveBuffer.add(packet);
+	                //}
+	                //System.out.println("Got packet: " + packet.toString());
+	            }
+			}
+		});
         thread.setName("Packet-receiver");
         thread.setDaemon(true);
-        thread.start();*/
+        thread.start();
     }
     
     public Packet waitForPacket(int timeOut) {
@@ -153,41 +160,6 @@ public class SocketManager<receiveBuffer> extends java.util.Observable {
             Tools.waitForMs(50);
         }
         return packet;
-    }
-
-    public synchronized boolean login(String username, String password) throws IOException {
-        sendPacket(Packet.createCommandPacket(
-                Command.loginUserCommand(username, password)));  
-        Packet ans = waitForPacket(TIMEOUT);
-        return Packet.isSuccesResponse(ans);
-    }
-    
-    public synchronized boolean logout() throws IOException {
-        sendPacket(Packet.createCommandPacket(
-                Command.logoutUserCommand()));  
-        Packet ans = waitForPacket(TIMEOUT);
-        return Packet.isSuccesResponse(ans);
-    }
-    
-    public synchronized boolean userExists(String username) throws IOException {
-        sendPacket(Packet.createCommandPacket(
-                Command.checkUserCommand(username)));  
-        Packet ans = waitForPacket(TIMEOUT);
-        return Packet.isSuccesResponse(ans);
-    }
-    
-    public synchronized boolean createUser(String username, String password) throws IOException {
-        sendPacket(Packet.createCommandPacket(
-                Command.createUserCommand(username, password)));  
-        Packet ans = waitForPacket(TIMEOUT);
-        return Packet.isSuccesResponse(ans);
-    }
-    
-    public synchronized boolean deleteUser() throws IOException {
-        sendPacket(Packet.createCommandPacket(
-                Command.deleteUserCommand()));  
-        Packet ans = waitForPacket(TIMEOUT);
-        return Packet.isSuccesResponse(ans);
     }
     
     public synchronized boolean checkFile(long id) throws IOException {
