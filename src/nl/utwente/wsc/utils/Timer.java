@@ -1,4 +1,4 @@
-package nl.utwente.wsc.com.model;
+package nl.utwente.wsc.utils;
 
 
 import java.io.BufferedOutputStream;

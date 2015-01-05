@@ -9,6 +9,11 @@ package nl.utwente.wsc.com.model.exception;
 public class InvalidProgramSettingsException extends Exception {
   
     /**
+	 * 
+	 */
+	private static final long serialVersionUID = 4213479037263020607L;
+
+	/**
      * Create a new program settings file exception.
      *
      * @param processId the name of the process that throws the exception

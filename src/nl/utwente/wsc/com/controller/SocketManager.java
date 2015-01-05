@@ -17,8 +17,8 @@ import javax.net.ssl.SSLSocketFactory;
 
 import nl.utwente.wsc.com.model.Command;
 import nl.utwente.wsc.com.model.Packet;
-import nl.utwente.wsc.com.model.Timer;
-import nl.utwente.wsc.com.model.Tools;
+import nl.utwente.wsc.utils.Timer;
+import nl.utwente.wsc.utils.Tools;
 
 /**
  * Client socket implementation.
