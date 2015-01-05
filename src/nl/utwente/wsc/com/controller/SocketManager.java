@@ -1,4 +1,4 @@
-package nl.utwente.wowstopcontact.communication.controller;
+package nl.utwente.wsc.com.controller;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -15,10 +15,10 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
-import nl.utwente.wowstopcontact.communication.model.Command;
-import nl.utwente.wowstopcontact.communication.model.Packet;
-import nl.utwente.wowstopcontact.communication.model.Timer;
-import nl.utwente.wowstopcontact.communication.model.Tools;
+import nl.utwente.wsc.com.model.Command;
+import nl.utwente.wsc.com.model.Packet;
+import nl.utwente.wsc.com.model.Timer;
+import nl.utwente.wsc.com.model.Tools;
 
 /**
  * Client socket implementation.

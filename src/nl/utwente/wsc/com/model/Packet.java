@@ -1,10 +1,10 @@
-package nl.utwente.wowstopcontact.communication.model;
+package nl.utwente.wsc.com.model;
 
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import nl.utwente.wowstopcontact.communication.model.exception.InvalidPacketException;
+import nl.utwente.wsc.com.model.exception.InvalidPacketException;
 
 /**
  * Packet implementation

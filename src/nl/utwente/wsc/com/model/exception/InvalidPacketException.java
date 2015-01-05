@@ -1,4 +1,4 @@
-package nl.utwente.wowstopcontact.communication.model.exception;
+package nl.utwente.wsc.com.model.exception;
 
 /**
  * Used to signal a packets' contents are malformed or 

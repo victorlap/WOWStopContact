@@ -1,6 +1,6 @@
-package nl.utwente.wowstopcontact.communication.model;
+package nl.utwente.wsc.com.model;
 
-import nl.utwente.wowstopcontact.communication.model.exception.InvalidPacketException;
+import nl.utwente.wsc.com.model.exception.InvalidPacketException;
 
 
 /**

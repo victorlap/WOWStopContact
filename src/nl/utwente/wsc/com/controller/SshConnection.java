@@ -1,4 +1,4 @@
-package nl.utwente.wowstopcontact.communication.controller;
+package nl.utwente.wsc.com.controller;
 
 import android.util.Log;
 
