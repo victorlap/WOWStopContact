@@ -9,13 +9,19 @@ import java.net.Socket;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
+import org.joda.time.DateTime;
+
+import android.util.Log;
+import nl.utwente.wsc.com.model.ColorType;
 import nl.utwente.wsc.com.model.Command;
 import nl.utwente.wsc.com.model.Packet;
 import nl.utwente.wsc.com.model.PacketHeader;
@@ -27,9 +33,8 @@ import nl.utwente.wsc.utils.Tools;
  * Client socket implementation.
  *
  * @author rvemous
- * @param <receiveBuffer>
  */
-public class SocketManager extends java.util.Observable {
+public class SocManagerClient extends java.util.Observable {
     
     public static final int TIMEOUT = 10000; //ms
     public static final String CONNECTION_DEAD = "DEAD";
@@ -54,7 +59,7 @@ public class SocketManager extends java.util.Observable {
      * @param timeout time-out to use for connecting
      * @throws IOException 
      */
-    public SocketManager(InetAddress address, int portNr, int timeout) throws IOException {
+    public SocManagerClient(InetAddress address, int portNr, int timeout) throws IOException {
         System.setProperty("javax.net.ssl.trustStore", "keystore");
         System.setProperty("javax.net.ssl.trustStorePassword", "picloudkeypass");
 
@@ -90,7 +95,7 @@ public class SocketManager extends java.util.Observable {
      */
     private void startReceiverThread() {
     	Thread thread = new Thread(new Runnable() {
-			
+		
 			@Override
 			public void run() {
 				byte[] headerbuff = new byte[PacketHeader.HEADER_LENGTH];
@@ -99,8 +104,7 @@ public class SocketManager extends java.util.Observable {
 	                    try {
 	                        headerbuff[0] = (byte) in.read();
 	                    } catch (IOException ex) {
-	                        //notifyObserversSetchanged(CONNECTION_DEAD);
-	                        ex.printStackTrace();
+	                        Log.e(this.toString(), "Connection dead");
 	                        stop = true;
 	                        continue;
 	                    }
@@ -109,21 +113,19 @@ public class SocketManager extends java.util.Observable {
 	                try {
 	                    in.read(headerbuff, 1, headerbuff.length - 1);
 	                } catch (IOException ex) {
-	                    ex.printStackTrace();
+	                	Log.e(this.toString(), "Connection dead");
 	                    stop = true;
-	                    //notifyObserversSetchanged(CONNECTION_DEAD);
 	                    continue;                  
 	                }
 	                PacketHeader header = null;
 	                try {
 	                    header = new PacketHeader(headerbuff);
 	                } catch (InvalidPacketException ex) {
-	                    System.out.println("Got invalid header: " + 
+	                    Log.e(this.toString(), "Got invalid header: " + 
 	                            Arrays.toString(headerbuff));
 	                    continue;
 	                }
 	                int len = header.getPacketLength();
-	                //System.out.println(header.toString());
 	                byte[] receiverBuff = new byte[len];
 	                int i = 0;
 	                try {
@@ -132,14 +134,13 @@ public class SocketManager extends java.util.Observable {
 	                } catch (IOException ex) {
 	                    ex.printStackTrace();
 	                    stop = true;
-	                    //notifyObserversSetchanged(CONNECTION_DEAD);
 	                    continue;
 	                }
 	                Packet packet = new Packet(header, receiverBuff);
-	                //synchronized (lock) {
+	                synchronized (lock) {
 	                    receiveBuffer.add(packet);
-	                //}
-	                //System.out.println("Got packet: " + packet.toString());
+	                }
+	                Log.d(this.toString(), "Got packet: " + packet.toString());
 	            }
 			}
 		});
@@ -152,68 +153,61 @@ public class SocketManager extends java.util.Observable {
         Packet packet = null;
         Timer timer = new Timer(timeOut, true);
         while (!stop && !timer.hasExpired()) {
-            //synchronized (lock) {
+            synchronized (lock) {
                 if (!receiveBuffer.isEmpty()) {
                     return receiveBuffer.removeFirst();
                 }
-            //}
+            }
             Tools.waitForMs(50);
         }
         return packet;
     }
     
-    public synchronized boolean checkFile(long id) throws IOException {
-        sendPacket(Packet.createCommandPacket(
-                Command.checkFileCommand(id)));  
+    public synchronized boolean socketIsOn() throws IOException {
+        sendPacket(Packet.createCommandPacket(Command.isTurnedOn()));
+        Packet ans = waitForPacket(TIMEOUT);
+        return Packet.isSuccesResponse(ans);
+    }
+    
+    public synchronized boolean turnOffSocket() throws IOException {
+        sendPacket(Packet.createCommandPacket(Command.turnOff()));
         Packet ans = waitForPacket(TIMEOUT);
         return Packet.isSuccesResponse(ans);
     }
         
-    public synchronized byte[] downloadFile(long id) throws IOException {
-        sendPacket(Packet.createCommandPacket(
-                Command.downloadFileCommand(id)));  
+    public synchronized boolean turnOnSocket() throws IOException {
+        sendPacket(Packet.createCommandPacket(Command.turnOff()));
         Packet ans = waitForPacket(TIMEOUT);
-        if (!Packet.isSuccesResponse(ans)) {
+        return Packet.isSuccesResponse(ans);
+    }
+    
+    public synchronized Map<DateTime, Integer> getPowerValues() throws IOException {
+        sendPacket(Packet.createCommandPacket(Command.getValues()));  
+        Packet ans = waitForPacket(TIMEOUT);
+        if (!Packet.isDataPacket(ans)) {
             return null;
         }
-        Packet data = waitForPacket(TIMEOUT * 6);
-        if (!Packet.isDataPacket(data)) {
-            return null;
+        String data = new String(ans.getData());
+        String[] valuePairs = data.split(";");
+        Map<DateTime, Integer> values = new HashMap<DateTime, Integer>();
+        for (String valuePair : valuePairs) {
+        	String[] splitted = valuePair.split(",");
+        	try {
+        		values.put(DateTime.parse(splitted[0]), Integer.parseInt(splitted[1]));
+        	} catch (Exception e) {
+        		Log.e(this.toString(), "invalid value pair: " + valuePair);
+        	}
         }
-        return data.getData();
+        return values;
     }
     
-    public synchronized long uploadFile(byte[] data) throws IOException {
-        sendPacket(Packet.createCommandPacket(
-                Command.uploadFileCommand(data.length)));  
-        Packet ans1 = waitForPacket(TIMEOUT);
-        if (!Packet.isSuccesResponse(ans1)) {
-            return -1;
-        }
-        sendPacket(Packet.createDataPacket(data));
-        Packet ans2 = waitForPacket(TIMEOUT);
-        if (!Packet.isResponsePacket(ans2)) {
-            return -2;
-        }
-        long id = 0;
-        try {
-            id = Long.parseLong(new String(ans2.getData()));
-        } catch (NumberFormatException e) {
-            return -3;
-        }
-        return id;
-    }
-    
-    public synchronized boolean deleteFile(long id) throws IOException {
-        sendPacket(Packet.createCommandPacket(
-                Command.deleteFileCommand(id)));         
+    public synchronized ColorType getSocketColor() throws IOException { 
+    	sendPacket(Packet.createCommandPacket(Command.getColor()));  
         Packet ans = waitForPacket(TIMEOUT);
-        return Packet.isSuccesResponse(ans);  
-    }
-    
-    public synchronized void stopServer() throws IOException {
-        sendPacket(Packet.createCommandPacket(
-                Command.stopServerCommand()));  
+        if (!Packet.isResponsePacket(ans)) {
+            return null;
+        }    	
+    	return ColorType.getType(new String(ans.getData()));
     }
     
     /**

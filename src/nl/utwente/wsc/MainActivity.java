@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import nl.utwente.wsc.com.controller.SocketManager;
+import nl.utwente.wsc.com.controller.SocManagerClient;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -23,7 +23,7 @@ public class MainActivity extends Activity {
 	private String mInetAddress;
 	private int mPortNumber;
 	
-	private SocketManager mSocketManager;
+	private SocManagerClient mSocketManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +79,6 @@ public class MainActivity extends Activity {
     	Intent i = getIntent();
     	mInetAddress = i.getStringExtra(EXTRA_INETADDRESS);
     	mPortNumber = i.getIntExtra(EXTRA_PORTNUMBER, DEFAULT_PORTNUMBER);
-    	mSocketManager = new SocketManager(InetAddress.getByName(mInetAddress), mPortNumber, 20);
+    	mSocketManager = new SocManagerClient(InetAddress.getByName(mInetAddress), mPortNumber, 20);
     }
 }

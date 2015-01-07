@@ -79,111 +79,48 @@ public class Command {
     }
     
     /**
-     * Logs in a user.
+     * Checks whether the wall socket is turned on.
      * 
-     * @param username of the user
-     * @param password of the user
      * @return the command
      */    
-    public static Command loginUserCommand(String username, String password) {
-        return new Command("login", new String[]{username, password});
+    public static Command isTurnedOn() {
+        return new Command("isOn", "");
     }
     
     /**
-     * Logs out a user.
+     * Turns off the wall socket.
      * 
      * @return the command
      */    
-    public static Command logoutUserCommand() {
-        return new Command("logout", (String)null);
+    public static Command turnOff() {
+        return new Command("turnOff", "");
     }
     
     /**
-     * Creates a new user.
+     * Turns on the wall socket.
      * 
-     * @param username of the user
-     * @param password of the user
      * @return the command
-     */    
-    public static Command createUserCommand(String username, String password) {
-        return new Command("create", new String[]{username, password});
+     */      
+    public static Command turnOn() {
+        return new Command("turnOn", "");
     }
     
     /**
-     * Checks the existence of the user.
+     * Gets the power usage values.
      * 
-     * @param username of the user
      * @return the command
-     */
-    public static Command checkUserCommand(String username) {
-        return new Command("checkUser", username); 
+     */    
+    public static Command getValues() {
+        return new Command("getValues", "");
     }
-    
+
     /**
-     * Deletes a user.
+     * Gets the power usage values.
      * 
      * @return the command
      */    
-    public static Command deleteUserCommand() {
-        return new Command("deleteUser", (String)null); 
+    public static Command getColor() {
+        return new Command("getColor", "");
     }
-    
-    /**
-     * Checks whether a file exists.
-     * 
-     * @param id of file
-     * @return the command
-     */    
-    public static Command checkFileCommand(long id) {
-        return new Command("checkFile", id + ""); 
-    }  
- 
-    /**
-     * Donwloads a file.
-     * 
-     * @param id of file
-     * @return the command
-     */    
-    public static Command downloadFileCommand(long id) {
-        return new Command("download", id + ""); 
-    } 
-    
-    /**
-     * Asks whether it can upload a file.
-     * 
-     * @param fileSize the size of the file
-     * @return the command
-     */    
-    public static Command uploadFileCommand(int fileSize) {
-        return new Command("upload", fileSize + ""); 
-    } 
-     
-    /**
-     * Deletes a file.
-     * 
-     * @param id of file
-     * @return the command
-     */    
-    public static Command deleteFileCommand(long id) {
-        return new Command("deleteFile", id + ""); 
-    }    
-    /**
-     * Test command.
-     * 
-     * @return the command
-     */    
-    public static Command stopServerCommand() {
-        return new Command("stop", "reallyactuallystop"); 
-    }
-    
-    /**
-     * Test command.
-     * 
-     * @return the command
-     */    
-    public static Command testCommand() {
-        return new Command("deleteUser", (String)null); 
-    }
-    
     
 }

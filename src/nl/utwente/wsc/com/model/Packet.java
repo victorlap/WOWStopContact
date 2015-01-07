@@ -110,6 +110,13 @@ public class Packet {
        PacketHeader header = new PacketHeader(PacketType.RESPONSE, response.length());
        return new Packet(header, response.getBytes());
     }
+    
+    public static boolean isCommandPacket(Packet packet) {
+        if (packet == null) {
+            return false;
+        }	
+        return packet.getHeader().getPacketType().equals(PacketType.COMMAND);
+    }
         
     public static boolean isSuccesResponse(Packet packet) {
         if (!isResponsePacket(packet)) {
