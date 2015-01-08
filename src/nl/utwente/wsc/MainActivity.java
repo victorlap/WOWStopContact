@@ -8,10 +8,8 @@ import nl.utwente.wsc.communication.SocManagerClient;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 
 public class MainActivity extends Activity {
@@ -30,35 +28,12 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
-        try {
-        	startSocketManager();
-        } catch (UnknownHostException e) {
-        	Toast.makeText(this, "No WSc could be found on this hostname", Toast.LENGTH_SHORT).show();
-			Log.e("WSc", e.getMessage());
-			
-			backToAddress();
-        } catch (IOException e) {
-        	Toast.makeText(this, "Something went wrong, please try again later or check the hostname and port", Toast.LENGTH_SHORT).show();
-			Log.e("WSc", e.getMessage());
-			
-			backToAddress();
-		}
     }
-    
-    private void backToAddress() {
-    	Intent intent = new Intent(this, AddressActivity.class);
-		intent.putExtra(MainActivity.EXTRA_INETADDRESS, mInetAddress);
-		intent.putExtra(MainActivity.EXTRA_PORTNUMBER, mPortNumber);
-		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-		startActivity(intent);
-		finish();
-    }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        // getMenuInflater().inflate(R.menu.main, menu);
+        getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
@@ -68,7 +43,9 @@ public class MainActivity extends Activity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
     	switch(item.getItemId()) {
-	    	case R.id.action_settings:
+	    	case R.id.action_view_wscs:
+	    		Intent intent = new Intent(this, WSCActivity.class);
+	    		startActivity(intent);
 	    		return true;
     		default:
     			return super.onOptionsItemSelected(item);
@@ -79,6 +56,7 @@ public class MainActivity extends Activity {
     	Intent i = getIntent();
     	mInetAddress = i.getStringExtra(EXTRA_INETADDRESS);
     	mPortNumber = i.getIntExtra(EXTRA_PORTNUMBER, DEFAULT_PORTNUMBER);
-    	mSocketManager = new SocManagerClient(InetAddress.getByName(mInetAddress), mPortNumber, 20);
+    	mSocketManager = new SocManagerClient(InetAddress.getByName("192.168.1.2"), 1337, 20);
+    	mSocketManager.start();
     }
 }

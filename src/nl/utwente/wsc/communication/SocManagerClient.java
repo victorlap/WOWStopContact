@@ -30,7 +30,7 @@ import nl.utwente.wsc.utils.Tools;
  *
  * @author rvemous
  */
-public class SocManagerClient extends java.util.Observable {
+public class SocManagerClient extends Thread {
     
     public static final int TIMEOUT = 10000; //ms
     public static final String CONNECTION_DEAD = "DEAD";
@@ -68,7 +68,7 @@ public class SocManagerClient extends java.util.Observable {
         
         receiveBuffer = new LinkedList<Packet>();
         startReceiverThread();
-    }
+    }    
     
     public boolean alive() {
         return session != null && session.isValid() && !stop;
@@ -218,10 +218,10 @@ public class SocManagerClient extends java.util.Observable {
         } catch (IOException ex) {/* socket closed by server */}
     }
     
-    public void notifyObserversSetchanged(Object arg) {
+    /*public void notifyObserversSetchanged(Object arg) {
         setChanged();
         notifyObservers(arg);
-    }
+    }*/
     
     private void printSessionInfo() {
         Certificate[] cchain = null;
