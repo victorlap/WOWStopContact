@@ -1,8 +1,8 @@
-package nl.utwente.wsc.com.model;
+package nl.utwente.wsc.communication;
 
 import java.util.Arrays;
 
-import nl.utwente.wsc.com.model.exception.InvalidPacketException;
+import nl.utwente.wsc.exceptions.InvalidPacketException;
 
 /**
  * PacketHeader implementation for communication with Pi.<br>

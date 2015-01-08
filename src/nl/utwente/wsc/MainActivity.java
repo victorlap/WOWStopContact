@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import nl.utwente.wsc.com.controller.SocManagerClient;
+import nl.utwente.wsc.communication.SocManagerClient;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;

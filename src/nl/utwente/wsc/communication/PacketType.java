@@ -1,4 +1,4 @@
-package nl.utwente.wsc.com.model;
+package nl.utwente.wsc.communication;
 
 /**
  * The type of packet.

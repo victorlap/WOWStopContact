@@ -1,4 +1,4 @@
-package nl.utwente.wsc.com.controller;
+package nl.utwente.wsc.communication;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -21,11 +21,7 @@ import javax.net.ssl.SSLSocketFactory;
 import org.joda.time.DateTime;
 
 import android.util.Log;
-import nl.utwente.wsc.com.model.ColorType;
-import nl.utwente.wsc.com.model.Command;
-import nl.utwente.wsc.com.model.Packet;
-import nl.utwente.wsc.com.model.PacketHeader;
-import nl.utwente.wsc.com.model.exception.InvalidPacketException;
+import nl.utwente.wsc.exceptions.InvalidPacketException;
 import nl.utwente.wsc.utils.Timer;
 import nl.utwente.wsc.utils.Tools;
 
