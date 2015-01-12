@@ -3,48 +3,71 @@ package nl.utwente.wsc.communication;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.InetAddress;
-import java.net.Socket;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
+import javax.net.SocketFactory;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
 
-import org.joda.time.DateTime;
-
-import android.util.Log;
 import nl.utwente.wsc.exceptions.InvalidPacketException;
 import nl.utwente.wsc.utils.Timer;
 import nl.utwente.wsc.utils.Tools;
+
+import org.joda.time.DateTime;
+
+import android.content.Context;
+import android.os.AsyncTask;
+import android.util.Log;
 
 /**
  * Client socket implementation.
  *
  * @author rvemous
  */
-public class SocManagerClient extends java.util.Observable {
+public class SocManagerClient extends AsyncTask<String, Integer, Object> {
+	
+	public static final int TIMEOUT = 10000;
+	public static final String TAG = "SocManagerClient";
     
-    public static final int TIMEOUT = 10000; //ms
-    public static final String CONNECTION_DEAD = "DEAD";
     private final Object lock = new Object();
     
     private boolean stop = false;
     
-    private Socket sock;
+    private SSLSocket sock;
     private SSLSession session;
+    private static SSLContext sslc;
+    private static final String CERTIFICATE = "server.crt";
     
     private BufferedInputStream in;
     private BufferedOutputStream out;
     
     private volatile LinkedList<Packet> receiveBuffer;
+    
+    private OnSocManagerTaskCompleted callBack;
+    
+    static {
+        System.setProperty("javax.net.ssl.trustStorePassword", "WScDrone5A");
+    }
 
     /**
      * Creates a new socket manager which is connected to the requested 
@@ -55,19 +78,19 @@ public class SocManagerClient extends java.util.Observable {
      * @param timeout time-out to use for connecting
      * @throws IOException 
      */
-    public SocManagerClient(InetAddress address, int portNr, int timeout) throws IOException {
-        System.setProperty("javax.net.ssl.trustStore", "keystore");
-        System.setProperty("javax.net.ssl.trustStorePassword", "picloudkeypass");
-
-        SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
-        sock = ssf.createSocket(address.getHostAddress(), portNr);
-        session = ((SSLSocket) sock).getSession();
-        
-        in = new BufferedInputStream(sock.getInputStream());
-        out = new BufferedOutputStream(sock.getOutputStream());
-        
-        receiveBuffer = new LinkedList<Packet>();
-        startReceiverThread();
+    public SocManagerClient(Context context, OnSocManagerTaskCompleted callBack) { 
+    	this.callBack = callBack;
+    	try {
+			getSSLContext(context.getAssets().open(CERTIFICATE));
+		} catch (IOException e) {
+			Log.e(TAG, "Cannot load certificate: " + e);
+			System.exit(15);
+		}
+    }
+    
+    public void connect(InetAddress address, int portNr, int timeout) throws IOException {
+    	doInBackground(new String[]{ValueType.CONNECTING.toString(), 
+    			address.getHostAddress(), portNr+"", timeout+""});
     }
     
     public boolean alive() {
@@ -83,15 +106,15 @@ public class SocManagerClient extends java.util.Observable {
     public void sendPacket(Packet packet) throws IOException {
         out.write(packet.toSendablePacket());
         out.flush();
+        Log.v(TAG, packet.toString());
     }
     
     /**
-     * Starts the receiver thread which will read packats and will send 
+     * Starts the receiver thread which will read packets and will send 
      * them to any observers.
      */
     private void startReceiverThread() {
-    	Thread thread = new Thread(new Runnable() {
-		
+    	Thread thread = new Thread(new Runnable() {	
 			@Override
 			public void run() {
 				byte[] headerbuff = new byte[PacketHeader.HEADER_LENGTH];
@@ -209,18 +232,68 @@ public class SocManagerClient extends java.util.Observable {
     /**
      * Shuts down client nicely.
      */
-    public void shutdown() {
-        stop = true;
-        Tools.waitForMs(100);
-        session.invalidate();
-        try {
-            sock.close();
-        } catch (IOException ex) {/* socket closed by server */}
+    public void disconnect() {
+    	doInBackground(ValueType.DISCONNECTING, null);
     }
     
-    public void notifyObserversSetchanged(Object arg) {
-        setChanged();
-        notifyObservers(arg);
+    private SSLContext getSSLContext(InputStream certificate) {
+    	if (sslc != null) {
+    		return sslc;
+    	}
+    	// Load CA from a .crt file
+    	CertificateFactory cf = null;
+		try {
+			cf = CertificateFactory.getInstance("X.509");
+		} catch (CertificateException e) {
+			Log.e(TAG, "Cannot load certificate factory for X.509: " + e);
+			System.exit(10);
+		}
+		Certificate ca = null;
+    	try {
+    	    ca = cf.generateCertificate(certificate);
+    	    System.out.println("ca=" + ((X509Certificate) ca).getSubjectDN());
+    	} catch (CertificateException e) {
+			Log.e(TAG, "Cannot generate certificate: " + e);
+			System.exit(12);
+		} finally {
+    	    try {
+				certificate.close();
+			} catch (IOException e) {
+				Log.e(TAG, "Cannot close certificate file: " + e);
+				System.exit(13);				
+			}
+    	}
+		try {
+	    	// Create a KeyStore containing our trusted CAs
+	    	String keyStoreType = KeyStore.getDefaultType();
+	    	KeyStore keyStore = null;
+			keyStore = KeyStore.getInstance(keyStoreType);
+			keyStore.load(null, null);
+			keyStore.setCertificateEntry("WSc", ca);
+	    	// Create a TrustManager that trusts the CAs in our KeyStore
+	    	String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
+	    	TrustManagerFactory tm = TrustManagerFactory.getInstance(tmfAlgorithm);
+	    	tm.init(keyStore);
+	    	// Create an SSLContext that uses our TrustManager
+	    	sslc = SSLContext.getInstance("TLS");
+	    	sslc.init(null, tm.getTrustManagers(), null);
+		} catch (KeyStoreException e) {
+			Log.e(TAG, "Cannot generate keystore: " + e);
+			System.exit(14);	
+		} catch (CertificateException e) {
+			Log.e(TAG, "Cannot use certificate: " + e);
+			System.exit(15);	
+		} catch (NoSuchAlgorithmException e) {
+			// will not happen
+			System.exit(16);
+		} catch (IOException e) {
+			// will not happen
+			System.exit(17);
+		} catch (KeyManagementException e) {
+			// will not happen
+			System.exit(18);
+		}   
+		return sslc;
     }
     
     private void printSessionInfo() {
@@ -241,5 +314,60 @@ public class SocManagerClient extends java.util.Observable {
         System.out.println("Session created in " + session.getCreationTime());
         System.out.println("Session accessed in " + session.getLastAccessedTime());
     }
+
+
+	@Override
+	protected Object doInBackground(String... params) {
+		ValueType type = ValueType.getType(params[0]);
+		Object returnValue = null;
+		try {
+			if (type.equals(ValueType.IS_ON)) {		
+				returnValue = socketIsOn();		
+			} else if (type.equals(ValueType.TURN_OFF)) {
+				returnValue = turnOffSocket();
+			} else if (type.equals(ValueType.TURN_ON)) {
+				returnValue = turnOnSocket();
+			} else if (type.equals(ValueType.VALUES_POWER)) {
+				returnValue = getPowerValues();
+			} else if (type.equals(ValueType.VALUES_COLOR)) {
+				returnValue = getSocketColor();
+			} else if (type.equals(ValueType.CONNECTING)) {
+				// Open SSLSocket to wall socket
+		        SocketFactory ssf = sslc.getSocketFactory();
+		        sock = (SSLSocket)ssf.createSocket(params[1], Integer.parseInt(params[2]));
+		        HostnameVerifier hv = HttpsURLConnection.getDefaultHostnameVerifier();
+		        session = sock.getSession();
+		        // Verify that the certificate host name is for the wall socket
+		        // This is due to lack of SNI support in the current SSLSocket.
+		        if (!hv.verify("WSc", session)) {
+		            throw new SSLHandshakeException("Expected " + "WSc" +
+		                                            ", found " + session.getPeerPrincipal());
+		        }
+		        in = new BufferedInputStream(sock.getInputStream());
+		        out = new BufferedOutputStream(sock.getOutputStream());
+		        receiveBuffer = new LinkedList<Packet>();
+		        startReceiverThread();  	
+		        returnValue = true;
+			} else if (type.equals(ValueType.DISCONNECTING)) {
+		        stop = true;
+		        Tools.waitForMs(100);
+		        session.invalidate();
+		        try {
+		            in.close();
+		            out.close();
+		            sock.close();
+		        } catch (IOException ex) {/* socket closed by server */}	
+		        returnValue = true;
+			}
+		} catch (IOException e) {}
+		callBack.doneTask(type, returnValue);
+		return returnValue;
+	}
+	
+	@Override
+	protected void onProgressUpdate(Integer... values) {
+		// TODO use this??
+		super.onProgressUpdate(values);
+	}
     
 }
