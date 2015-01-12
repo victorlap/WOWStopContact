@@ -91,7 +91,7 @@ public class SocManagerClient extends AsyncTask<String, Integer, Object> {
     public void connect(InetAddress address, int portNr, int timeout) throws IOException {
     	doInBackground(new String[]{ValueType.CONNECTING.toString(), 
     			address.getHostAddress(), portNr+"", timeout+""});
-    }
+    }    
     
     public boolean alive() {
         return session != null && session.isValid() && !stop;

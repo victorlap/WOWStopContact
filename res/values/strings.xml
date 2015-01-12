@@ -11,5 +11,8 @@
     <string name="defaultIP">192.168.0.124</string>
     <string name="portnumber">Portnumber</string>
     <string name="find">Find</string>
+    <string name="wscs">WSc\'s</string>
+    <string name="view_wscs">View WSc\'s</string>
+    <string name="add_wsc">Add WSc</string>
 
 </resources>

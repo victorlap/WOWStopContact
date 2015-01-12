@@ -39,7 +39,7 @@ public class MainActivity extends Activity {
         
         startSocketManager();
     }
-    
+			
     @Override
     public void onBackPressed() {
     	super.onBackPressed();
@@ -60,7 +60,7 @@ public class MainActivity extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        // getMenuInflater().inflate(R.menu.main, menu);
+        getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
@@ -70,7 +70,9 @@ public class MainActivity extends Activity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
     	switch(item.getItemId()) {
-	    	case R.id.action_settings:
+	    	case R.id.action_view_wscs:
+	    		Intent intent = new Intent(this, WSCActivity.class);
+	    		startActivity(intent);
 	    		return true;
     		default:
     			return super.onOptionsItemSelected(item);
