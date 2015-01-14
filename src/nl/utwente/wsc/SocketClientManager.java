@@ -2,7 +2,9 @@ package nl.utwente.wsc;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.Set;
 
 import nl.utwente.wsc.communication.OnSocManagerTaskCompleted;
 import nl.utwente.wsc.communication.SocketClient;
@@ -13,15 +15,16 @@ import android.content.Context;
 
 public class SocketClientManager implements OnSocManagerTaskCompleted {
 	
-	HashMap<WSc, SocketClient> clientList = new HashMap<WSc, SocketClient>();
+	private HashMap<WSc, SocketClient> clientList = new HashMap<WSc, SocketClient>();
+	private Context context;
 
 	public SocketClientManager(Context c) {
+		
+		this.context = c;
 		if(FileUtils.hasWscList()) {
 			try {
 				for(WSc wsc : FileUtils.getWSCListFromFile()) {
-					SocketClient sClient = new SocketClient(c, this);
-					sClient.connect(InetAddress.getByName(wsc.getHostname()), wsc.getPort(), 10000);
-					clientList.put(wsc, new SocketClient(c, this));
+					addWsc(wsc);
 				}
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
@@ -37,6 +40,16 @@ public class SocketClientManager implements OnSocManagerTaskCompleted {
 	public void doneTask(InetAddress address, ValueType type, Object value) {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	public Set<WSc> getAll() {
+		return clientList.keySet();
+	}
+	
+	public void addWsc(WSc wsc) throws IOException {
+			SocketClient sClient = new SocketClient(context, this);
+			sClient.connect(InetAddress.getByName(wsc.getHostname()), wsc.getPort(), 10000);
+			clientList.put(wsc, sClient);
 	}
 	
 	public boolean setDevicesState(boolean turnOn) {
