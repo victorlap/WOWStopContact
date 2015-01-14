@@ -8,17 +8,27 @@ import java.util.List;
 import nl.utwente.wsc.communication.OnSocManagerTaskCompleted;
 import nl.utwente.wsc.communication.SocketClient;
 import nl.utwente.wsc.communication.ValueType;
+import nl.utwente.wsc.models.WSc;
+import nl.utwente.wsc.utils.FileUtils;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.ListActivity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ListAdapter;
 import android.widget.Toast;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends ListActivity {
 	
 	private static final String TAG = "WSc";
 	
@@ -40,6 +50,10 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         setupCallbackListener();
         startSocketManager();
+        
+        //ListAdapter adapter = new ArrayAdapter<WSc>(this, android.R.layout.simple_list_item_1, list);
+		
+		//setListAdapter(adapter);
     }
 		
 	@Override
@@ -67,9 +81,8 @@ public class MainActivity extends Activity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
     	switch(item.getItemId()) {
-	    	case R.id.action_view_wscs:
-	    		Intent intent = new Intent(this, WSCActivity.class);
-	    		startActivity(intent);
+	    	case R.id.action_add_wsc:
+	    		showAddWscDialog();
 	    		return true;
     		default:
     			return super.onOptionsItemSelected(item);
@@ -95,23 +108,23 @@ public class MainActivity extends Activity {
 		};		
 	}
     
-    private void stopSocketManager() {
+    /*private void stopSocketManager() {
     	if (outlet != null) {
 			outlet.disconnect();
 			outlet = null;
 			toastMessage(this, "Stopped client succesfully", false);
     	}
-    }
+    }*/
     
     private void startSocketManager() {
-    	if (outlet != null) {
+    	/*if (outlet != null) {
     		return;
-    	}
+    	}*/
     	Intent i = getIntent();
     	mInetAddress = "130.89.236.220";//i.getStringExtra(EXTRA_INETADDRESS);
     	mPortNumber = 7331;//i.getIntExtra(EXTRA_PORTNUMBER, DEFAULT_PORTNUMBER);
     	final MainActivity ref = this;
-    	Thread thread = new Thread(new Runnable() {		
+    	/*Thread thread = new Thread(new Runnable() {		
 			@Override
 			public void run() {
 		    	try {
@@ -127,7 +140,7 @@ public class MainActivity extends Activity {
 			}
 		});
     	thread.setDaemon(true);
-    	thread.start();
+    	thread.start();*/
     }
     
     private void toastMessage(final Context context, final String message, final boolean displayLong) {
@@ -136,5 +149,44 @@ public class MainActivity extends Activity {
     	        Toast.makeText(context, message, displayLong ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT).show();
     	    }
     	});
+    }
+    
+    private void showAddWscDialog() {
+    	AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle("Add WSc");
+        
+    	LinearLayout layout = new LinearLayout(this);
+    	layout.setOrientation(LinearLayout.VERTICAL);
+
+    	final EditText nameBox = new EditText(this);
+    	nameBox.setHint("Name");
+    	layout.addView(nameBox);
+
+    	final EditText hostnameBox = new EditText(this);
+    	hostnameBox.setHint("Hostname");
+    	layout.addView(hostnameBox);
+    	
+    	final EditText portBox = new EditText(this);
+    	portBox.setHint("Port");
+    	layout.addView(portBox);
+
+    	dialog.setView(layout);
+    	
+    	dialog.setPositiveButton("Add", new OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				// TODO
+			}
+		});
+    	dialog.setNegativeButton("Cancel", new OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss();
+			}
+		});
+    	
+    	dialog.show();
     }
 }

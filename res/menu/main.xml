@@ -2,10 +2,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="nl.utwente.wowstopcontact.MainActivity" >
 
-    <item
-        android:id="@+id/action_view_wscs"
-        android:orderInCategory="100"
-        android:showAsAction="never"
-        android:title="@string/view_wscs"/>
+   <item
+        android:id="@+id/action_add_wsc"
+        android:showAsAction="always"
+        android:title="@string/add_wsc"/>
 
 </menu>
