@@ -3,16 +3,14 @@ package nl.utwente.wsc;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 import java.util.List;
 
 import nl.utwente.wsc.communication.OnSocManagerTaskCompleted;
-import nl.utwente.wsc.communication.SocManagerClient;
+import nl.utwente.wsc.communication.SocketClient;
 import nl.utwente.wsc.communication.ValueType;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -34,20 +32,20 @@ public class MainActivity extends Activity {
 	private int mPortNumber;
 	
 	//private List<SocManagerClient> outlets; TODO should be like this
-	private SocManagerClient outlet;
+	private List<SocketClient> outlets;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        setupCallback();
+        setupCallbackListener();
         startSocketManager();
     }
 		
-
 	@Override
     public void onBackPressed() {
     	super.onBackPressed();
+    	// pause client update list
     }
 
     @Override
@@ -55,6 +53,12 @@ public class MainActivity extends Activity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
+    }
+    
+    @Override
+    protected void onDestroy() {
+    	super.onDestroy();
+    	
     }
 
     @Override
@@ -72,16 +76,23 @@ public class MainActivity extends Activity {
     	}
     }
     
-    private void setupCallback() {
-        callback = new OnSocManagerTaskCompleted() {
-			
-			@Override
+    private void setupCallbackListener() {
+    	final MainActivity ref = this;
+        callback = new OnSocManagerTaskCompleted() {			      	
+        	@Override
 			public void doneTask(ValueType type, Object value) {
-				// TODO Auto-generated method stub
+				try {
+					if (type.equals(ValueType.CONNECTING)) {	
+						toastMessage(ref, "Succes! (" + InetAddress.getByName(mInetAddress) + 
+								":" + mPortNumber, false);
+						//TODO enable 
+					}
+				} catch (IOException e) {
+					Log.e(TAG, e.getLocalizedMessage());
+				}
 				
 			}
-		};
-		
+		};		
 	}
     
     private void stopSocketManager() {
@@ -97,20 +108,15 @@ public class MainActivity extends Activity {
     		return;
     	}
     	Intent i = getIntent();
-    	mInetAddress = i.getStringExtra(EXTRA_INETADDRESS);
-    	mPortNumber = i.getIntExtra(EXTRA_PORTNUMBER, DEFAULT_PORTNUMBER);
+    	mInetAddress = "130.89.236.220";//i.getStringExtra(EXTRA_INETADDRESS);
+    	mPortNumber = 7331;//i.getIntExtra(EXTRA_PORTNUMBER, DEFAULT_PORTNUMBER);
     	final MainActivity ref = this;
     	Thread thread = new Thread(new Runnable() {		
 			@Override
 			public void run() {
 		    	try {
-					outlet = new SocManagerClient(ref, callback);
+					outlet = new SocketClient(ref, callback);
 					outlet.connect(InetAddress.getByName(mInetAddress), mPortNumber, 10000);
-					toastMessage(ref, "Succes! (" + InetAddress.getByName(mInetAddress) + 
-							":" + mPortNumber, false);
-					outlet.getPowerValues();
-					outlet.getSocketColor();
-					outlet.socketIsOn();
 		        } catch (UnknownHostException e) {
 		        	toastMessage(ref, "No WSc could be found on this hostname", false);
 					Log.e(TAG, e.getMessage());			

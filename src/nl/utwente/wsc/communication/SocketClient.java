@@ -44,10 +44,10 @@ import android.util.Log;
  *
  * @author rvemous
  */
-public class SocManagerClient extends AsyncTask<String, Integer, Object> {
+public class SocketClient extends AsyncTask<String, Integer, Object> {
 	
 	public static final int TIMEOUT = 10000;
-	public static final String TAG = "SocManagerClient";
+	public static final String TAG = "SocketClient";
     
     private final Object lock = new Object();
     
@@ -78,7 +78,7 @@ public class SocManagerClient extends AsyncTask<String, Integer, Object> {
      * @param timeout time-out to use for connecting
      * @throws IOException 
      */
-    public SocManagerClient(Context context, OnSocManagerTaskCompleted callBack) { 
+    public SocketClient(Context context, OnSocManagerTaskCompleted callBack) { 
     	this.callBack = callBack;
     	try {
 			getSSLContext(context.getAssets().open(CERTIFICATE));
@@ -182,58 +182,31 @@ public class SocManagerClient extends AsyncTask<String, Integer, Object> {
         return packet;
     }
     
-    public synchronized boolean socketIsOn() throws IOException {
-        sendPacket(Packet.createCommandPacket(Command.isTurnedOn()));
-        Packet ans = waitForPacket(TIMEOUT);
-        return Packet.isSuccesResponse(ans);
+    public synchronized void socketIsOn() throws IOException {
+        doInBackground(new String[]{ValueType.IS_ON.toString()});
     }
     
-    public synchronized boolean turnOffSocket() throws IOException {
-        sendPacket(Packet.createCommandPacket(Command.turnOff()));
-        Packet ans = waitForPacket(TIMEOUT);
-        return Packet.isSuccesResponse(ans);
+    public synchronized void turnOffSocket() throws IOException {
+        doInBackground(new String[]{ValueType.TURN_OFF.toString()});
     }
         
-    public synchronized boolean turnOnSocket() throws IOException {
-        sendPacket(Packet.createCommandPacket(Command.turnOff()));
-        Packet ans = waitForPacket(TIMEOUT);
-        return Packet.isSuccesResponse(ans);
+    public synchronized void turnOnSocket() throws IOException {
+        doInBackground(new String[]{ValueType.TURN_OFF.toString()});
     }
     
-    public synchronized Map<DateTime, Integer> getPowerValues() throws IOException {
-        sendPacket(Packet.createCommandPacket(Command.getValues()));  
-        Packet ans = waitForPacket(TIMEOUT);
-        if (!Packet.isDataPacket(ans)) {
-            return null;
-        }
-        String data = new String(ans.getData());
-        String[] valuePairs = data.split(";");
-        Map<DateTime, Integer> values = new HashMap<DateTime, Integer>();
-        for (String valuePair : valuePairs) {
-        	String[] splitted = valuePair.split(",");
-        	try {
-        		values.put(DateTime.parse(splitted[0]), Integer.parseInt(splitted[1]));
-        	} catch (Exception e) {
-        		Log.e(this.toString(), "invalid value pair: " + valuePair);
-        	}
-        }
-        return values;
+    public synchronized void getPowerValues() throws IOException {
+        doInBackground(new String[]{ValueType.VALUES_POWER.toString()});
     }
     
-    public synchronized ColorType getSocketColor() throws IOException { 
-    	sendPacket(Packet.createCommandPacket(Command.getColor()));  
-        Packet ans = waitForPacket(TIMEOUT);
-        if (!Packet.isResponsePacket(ans)) {
-            return null;
-        }    	
-    	return ColorType.getType(new String(ans.getData()));
+    public synchronized void getSocketColor() throws IOException { 
+        doInBackground(new String[]{ValueType.VALUES_COLOR.toString()});
     }
     
     /**
      * Shuts down client nicely.
      */
     public void disconnect() {
-    	doInBackground(new String[]{ValueType.DISCONNECTING+""});
+    	doInBackground(new String[]{ValueType.DISCONNECTING.toString()});
     }
     
     private SSLContext getSSLContext(InputStream certificate) {
@@ -251,7 +224,7 @@ public class SocManagerClient extends AsyncTask<String, Integer, Object> {
 		Certificate ca = null;
     	try {
     	    ca = cf.generateCertificate(certificate);
-    	    System.out.println("ca=" + ((X509Certificate) ca).getSubjectDN());
+    	    //System.out.println("ca=" + ((X509Certificate) ca).getSubjectDN());
     	} catch (CertificateException e) {
 			Log.e(TAG, "Cannot generate certificate: " + e);
 			System.exit(12);
@@ -315,22 +288,48 @@ public class SocManagerClient extends AsyncTask<String, Integer, Object> {
         System.out.println("Session accessed in " + session.getLastAccessedTime());
     }
 
-
 	@Override
 	protected Object doInBackground(String... params) {
 		ValueType type = ValueType.getType(params[0]);
 		Object returnValue = null;
 		try {
 			if (type.equals(ValueType.IS_ON)) {		
-				returnValue = socketIsOn();		
+		        sendPacket(Packet.createCommandPacket(Command.isTurnedOn()));
+		        Packet ans = waitForPacket(TIMEOUT);
+		        returnValue = Packet.isSuccesResponse(ans);	
 			} else if (type.equals(ValueType.TURN_OFF)) {
-				returnValue = turnOffSocket();
+		        sendPacket(Packet.createCommandPacket(Command.turnOff()));
+		        Packet ans = waitForPacket(TIMEOUT);
+		        returnValue = Packet.isSuccesResponse(ans);	
 			} else if (type.equals(ValueType.TURN_ON)) {
-				returnValue = turnOnSocket();
+		        sendPacket(Packet.createCommandPacket(Command.turnOn()));
+		        Packet ans = waitForPacket(TIMEOUT);
+		        returnValue = Packet.isSuccesResponse(ans);	
 			} else if (type.equals(ValueType.VALUES_POWER)) {
-				returnValue = getPowerValues();
+		        sendPacket(Packet.createCommandPacket(Command.getValues()));  
+		        Packet ans = waitForPacket(TIMEOUT);
+		        if (!Packet.isDataPacket(ans)) {
+		            return null;
+		        }
+		        String data = new String(ans.getData());
+		        String[] valuePairs = data.split(";");
+		        Map<DateTime, Integer> values = new HashMap<DateTime, Integer>();
+		        for (String valuePair : valuePairs) {
+		        	String[] splitted = valuePair.split(",");
+		        	try {
+		        		values.put(DateTime.parse(splitted[0]), Integer.parseInt(splitted[1]));
+		        	} catch (Exception e) {
+		        		Log.e(this.toString(), "invalid value pair: " + valuePair);
+		        	}
+		        }
+		        returnValue = values;
 			} else if (type.equals(ValueType.VALUES_COLOR)) {
-				returnValue = getSocketColor();
+		    	sendPacket(Packet.createCommandPacket(Command.getColor()));  
+		        Packet ans = waitForPacket(TIMEOUT);
+		        if (!Packet.isResponsePacket(ans)) {
+		            return null;
+		        }    	
+		        returnValue = ColorType.getType(new String(ans.getData()));
 			} else if (type.equals(ValueType.CONNECTING)) {
 				// Open SSLSocket to wall socket
 		        SocketFactory ssf = sslc.getSocketFactory();
