@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
+	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
+	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="gen"/>
+<<<<<<< HEAD
+=======
+	<classpathentry kind="lib" path="libs/jsch-0.1.51.jar"/>
+>>>>>>> 0f6dbcd8f44aa86d8f05d4a1a1d0698c46eade09
+	<classpathentry kind="lib" path="libs/joda-time-2.4.jar"/>
+	<classpathentry kind="output" path="bin/classes"/>
+</classpath>

@@ -51,10 +51,9 @@ public class SocketClient extends AsyncTask<String, Integer, Object> {
     
     private final Object lock = new Object();
     
-    private boolean stop = false;
+    private boolean stop = true;
     
     private SSLSocket sock;
-    private SSLSession session;
     private static SSLContext sslc;
     private static final String CERTIFICATE = "server.crt";
     
@@ -94,7 +93,7 @@ public class SocketClient extends AsyncTask<String, Integer, Object> {
     }    
     
     public boolean alive() {
-        return session != null && session.isValid() && !stop;
+        return !stop;
     }
     
     /**
@@ -182,24 +181,32 @@ public class SocketClient extends AsyncTask<String, Integer, Object> {
         return packet;
     }
     
-    public synchronized void socketIsOn() throws IOException {
-        doInBackground(new String[]{ValueType.IS_ON.toString()});
+    public synchronized boolean socketIsOn() throws IOException {
+    	return performAsyncAction(ValueType.IS_ON);
     }
     
-    public synchronized void turnOffSocket() throws IOException {
-        doInBackground(new String[]{ValueType.TURN_OFF.toString()});
+    public synchronized boolean turnOffSocket() throws IOException {
+    	return performAsyncAction(ValueType.TURN_OFF);
     }
         
-    public synchronized void turnOnSocket() throws IOException {
-        doInBackground(new String[]{ValueType.TURN_OFF.toString()});
+    public synchronized boolean turnOnSocket() throws IOException {
+    	return performAsyncAction(ValueType.TURN_ON);
     }
     
-    public synchronized void getPowerValues() throws IOException {
-        doInBackground(new String[]{ValueType.VALUES_POWER.toString()});
+    public synchronized boolean getPowerValues() throws IOException {
+    	return performAsyncAction(ValueType.VALUES_POWER);
     }
     
-    public synchronized void getSocketColor() throws IOException { 
-        doInBackground(new String[]{ValueType.VALUES_COLOR.toString()});
+    public synchronized boolean getSocketColor() throws IOException { 
+    	return performAsyncAction(ValueType.VALUES_COLOR);
+    }
+    
+    private boolean performAsyncAction(ValueType type) {
+    	if (stop) {
+    		return false;
+    	}
+    	doInBackground(new String[]{type.toString()});
+        return true;
     }
     
     /**
@@ -268,25 +275,6 @@ public class SocketClient extends AsyncTask<String, Integer, Object> {
 		}   
 		return sslc;
     }
-    
-    private void printSessionInfo() {
-        Certificate[] cchain = null;
-        try {
-            cchain = session.getPeerCertificates();
-        } catch (SSLPeerUnverifiedException ex) {
-            ex.printStackTrace();
-        }
-        System.out.println("The Certificates used by peer");
-        for (int i = 0; i < cchain.length; i++) {
-            System.out.println(((X509Certificate) cchain[i]).getSubjectDN());
-        }
-        System.out.println("Peer host is " + session.getPeerHost());
-        System.out.println("Cipher is " + session.getCipherSuite());
-        System.out.println("Protocol is " + session.getProtocol());
-        System.out.println("ID is " + new BigInteger(session.getId()));
-        System.out.println("Session created in " + session.getCreationTime());
-        System.out.println("Session accessed in " + session.getLastAccessedTime());
-    }
 
 	@Override
 	protected Object doInBackground(String... params) {
@@ -335,7 +323,7 @@ public class SocketClient extends AsyncTask<String, Integer, Object> {
 		        SocketFactory ssf = sslc.getSocketFactory();
 		        sock = (SSLSocket)ssf.createSocket(params[1], Integer.parseInt(params[2]));
 		        HostnameVerifier hv = HttpsURLConnection.getDefaultHostnameVerifier();
-		        session = sock.getSession();
+		        SSLSession session = sock.getSession();
 		        // Verify that the certificate host name is for the wall socket
 		        // This is due to lack of SNI support in the current SSLSocket.
 		        if (!hv.verify("WSc", session)) {
@@ -347,10 +335,10 @@ public class SocketClient extends AsyncTask<String, Integer, Object> {
 		        receiveBuffer = new LinkedList<Packet>();
 		        startReceiverThread();  	
 		        returnValue = true;
+		        stop = false;
 			} else if (type.equals(ValueType.DISCONNECTING)) {
 		        stop = true;
 		        Tools.waitForMs(100);
-		        session.invalidate();
 		        try {
 		            in.close();
 		            out.close();
@@ -359,7 +347,7 @@ public class SocketClient extends AsyncTask<String, Integer, Object> {
 		        returnValue = true;
 			}
 		} catch (IOException e) {}
-		callBack.doneTask(type, returnValue);
+		callBack.doneTask(sock.getInetAddress(), type, returnValue);
 		return returnValue;
 	}
 	

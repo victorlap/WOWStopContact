@@ -13,7 +13,7 @@ import android.content.Context;
 
 public class SocketClientManager implements OnSocManagerTaskCompleted {
 	
-	HashMap<WSc, SocketClient> clientlist = new HashMap<WSc, SocketClient>();
+	HashMap<WSc, SocketClient> clientList = new HashMap<WSc, SocketClient>();
 
 	public SocketClientManager(Context c) {
 		if(FileUtils.hasWscList()) {
@@ -21,7 +21,7 @@ public class SocketClientManager implements OnSocManagerTaskCompleted {
 				for(WSc wsc : FileUtils.getWSCListFromFile()) {
 					SocketClient sClient = new SocketClient(c, this);
 					sClient.connect(InetAddress.getByName(wsc.getHostname()), wsc.getPort(), 10000);
-					clientlist.put(wsc, new SocketClient(c, this));
+					clientList.put(wsc, new SocketClient(c, this));
 				}
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
@@ -34,21 +34,38 @@ public class SocketClientManager implements OnSocManagerTaskCompleted {
 	}
 
 	@Override
-	public void doneTask(ValueType type, Object value) {
+	public void doneTask(InetAddress address, ValueType type, Object value) {
 		// TODO Auto-generated method stub
 		
 	}
 	
-	public void turnOnAllDevices() {
-		for(WSc wsc : clientlist.keySet()) {
-			SocketClient client = clientlist.get(wsc);
-			try {
-				client.turnOnSocket();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+	public boolean setDevicesState(boolean turnOn) {
+		boolean succes = true;
+		for(WSc wsc : clientList.keySet()) {
+			if (!setDeviceState(wsc, turnOn)) {
+				succes = false;
 			}
 		}
+		return succes;
+	}
+	
+	public boolean setDeviceState(WSc wsc, boolean turnOn) {
+		try {
+			if (turnOn) {
+				clientList.get(wsc).turnOnSocket();
+			} else {
+				clientList.get(wsc).turnOffSocket();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	public void stop() {
+		// TODO
+		
 	}
 
 }

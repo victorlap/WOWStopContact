@@ -93,7 +93,7 @@ public class MainActivity extends ListActivity {
     	final MainActivity ref = this;
         callback = new OnSocManagerTaskCompleted() {			      	
         	@Override
-			public void doneTask(ValueType type, Object value) {
+			public void doneTask(InetAddress address, ValueType type, Object value) {
 				try {
 					if (type.equals(ValueType.CONNECTING)) {	
 						toastMessage(ref, "Succes! (" + InetAddress.getByName(mInetAddress) + 
