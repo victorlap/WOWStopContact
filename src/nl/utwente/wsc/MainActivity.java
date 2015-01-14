@@ -48,19 +48,7 @@ public class MainActivity extends Activity {
 	@Override
     public void onBackPressed() {
     	super.onBackPressed();
-    	backToAddress();
     }
-    
-    private void backToAddress() {
-    	stopSocketManager();
-    	Intent intent = new Intent(this, WSCActivity.class);
-		intent.putExtra(MainActivity.EXTRA_INETADDRESS, mInetAddress);
-		intent.putExtra(MainActivity.EXTRA_PORTNUMBER, mPortNumber);
-		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-		startActivity(intent);
-		finish();
-    }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -126,11 +114,9 @@ public class MainActivity extends Activity {
 		        } catch (UnknownHostException e) {
 		        	toastMessage(ref, "No WSc could be found on this hostname", false);
 					Log.e(TAG, e.getMessage());			
-					backToAddress();
 		        } catch (IOException e) {
 		        	toastMessage(ref, "Something went wrong, please try again later or check the hostname and port", false);
 					Log.e(TAG, e.getMessage());			
-					backToAddress();
 				}		
 			}
 		});
