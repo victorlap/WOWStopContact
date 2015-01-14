@@ -6,7 +6,9 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
 
+import nl.utwente.wsc.communication.OnSocManagerTaskCompleted;
 import nl.utwente.wsc.communication.SocManagerClient;
+import nl.utwente.wsc.communication.ValueType;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -26,6 +28,8 @@ public class MainActivity extends Activity {
 	public static final String EXTRA_PORTNUMBER = "extra_portnumber";
 	public static final int DEFAULT_PORTNUMBER = 7331;
 	
+	private OnSocManagerTaskCompleted callback;
+	
 	private String mInetAddress;
 	private int mPortNumber;
 	
@@ -36,11 +40,12 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        
+        setupCallback();
         startSocketManager();
     }
-			
-    @Override
+		
+
+	@Override
     public void onBackPressed() {
     	super.onBackPressed();
     }
@@ -67,20 +72,23 @@ public class MainActivity extends Activity {
     	}
     }
     
+    private void setupCallback() {
+        callback = new OnSocManagerTaskCompleted() {
+			
+			@Override
+			public void doneTask(ValueType type, Object value) {
+				// TODO Auto-generated method stub
+				
+			}
+		};
+		
+	}
+    
     private void stopSocketManager() {
     	if (outlet != null) {
-    		new AsyncTask<Params, Progress, Result>
-        	final MainActivity ref = this;
-        	Thread thread = new Thread(new Runnable() {		
-    			@Override
-    			public void run() {
-    				outlet.shutdown();
-    				outlet = null;
-    				toastMessage(ref, "Stopped client succesfully", false);
-    			}
-        	});
-        	thread.setDaemon(true);
-        	thread.start();
+			outlet.disconnect();
+			outlet = null;
+			toastMessage(this, "Stopped client succesfully", false);
     	}
     }
     
@@ -96,7 +104,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void run() {
 		    	try {
-					outlet = new SocManagerClient(ref, InetAddress.getByName(mInetAddress), mPortNumber, 20);
+					outlet = new SocManagerClient(ref, );
 					toastMessage(ref, "Succes! (" + InetAddress.getByName(mInetAddress) + 
 							":" + mPortNumber, false);
 					outlet.getPowerValues();
