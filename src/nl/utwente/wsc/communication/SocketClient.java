@@ -87,9 +87,9 @@ public class SocketClient extends AsyncTask<String, Integer, Object> {
 		}
     }
     
-    public void connect(InetAddress address, int portNr, int timeout) throws IOException {
-    	doInBackground(new String[]{ValueType.CONNECTING.toString(), 
-    			address.getHostAddress(), portNr+"", timeout+""});
+    public void connect(String address, int portNr, int timeout) throws IOException {
+    	this.execute(new String[]{ValueType.CONNECTING.toString(), 
+    			address, portNr+"", timeout+""});
     }    
     
     public boolean alive() {
@@ -212,7 +212,7 @@ public class SocketClient extends AsyncTask<String, Integer, Object> {
     	if (stop) {
     		return false;
     	}
-    	doInBackground(new String[]{type.toString()});
+    	this.execute(new String[]{type.toString()});
         return true;
     }
     

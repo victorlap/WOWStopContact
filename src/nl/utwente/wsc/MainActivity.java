@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -36,25 +37,26 @@ public class MainActivity extends ListActivity {
 	private String mInetAddress;
 	private int mPortNumber;
 	
-	private SocketClientManager manager;
+	private final SocketClientManager manager = new SocketClientManager(this);
+	
+	private ArrayAdapter<WSc> adapter;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setupCallbackListener();
-        startSocketManager();
         
         ArrayList<WSc> list = new ArrayList<WSc>(manager.getAll());
-        ListAdapter adapter = new ArrayAdapter<WSc>(this, android.R.layout.simple_list_item_1, list);
-		
-		setListAdapter(adapter);
+        adapter = new ArrayAdapter<WSc>(this, android.R.layout.simple_list_item_1, list);
+
+        setListAdapter(adapter);
     }
 		
 	@Override
     public void onBackPressed() {
     	super.onBackPressed();
-    	// pause client update list
+    	// TODO pause client update list
     }
 
     @Override
@@ -103,10 +105,6 @@ public class MainActivity extends ListActivity {
 		};		
 	}
     
-    private void startSocketManager() {
-    	manager = new SocketClientManager(this);
-    }
-    
     private void stopSocketManager() {
     	manager.stop();
     }
@@ -120,6 +118,7 @@ public class MainActivity extends ListActivity {
 
     	final EditText nameBox = new EditText(this);
     	nameBox.setHint("Name");
+    	nameBox.requestFocus();
     	layout.addView(nameBox);
 
     	final EditText hostnameBox = new EditText(this);
@@ -128,6 +127,8 @@ public class MainActivity extends ListActivity {
     	
     	final EditText portBox = new EditText(this);
     	portBox.setHint("Port");
+    	portBox.setText(String.valueOf(DEFAULT_PORTNUMBER));
+    	portBox.setInputType(EditorInfo.TYPE_NUMBER_FLAG_DECIMAL);
     	layout.addView(portBox);
 
     	dialog.setView(layout);
@@ -136,9 +137,32 @@ public class MainActivity extends ListActivity {
 			
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				// TODO
+				String name = nameBox.getText().toString();
+				String host = hostnameBox.getText().toString();
+				
+				int port;
+				try {
+					port = Integer.parseInt(portBox.getText().toString());
+				} catch (NumberFormatException e) {
+					port = DEFAULT_PORTNUMBER;
+				}
+				if(name != null && host != null) {
+					
+					WSc wsc = new WSc(nameBox.getText().toString(), hostnameBox.getText().toString(), Integer.parseInt(portBox.getText().toString()));
+					try {
+						manager.addWsc(wsc);
+						adapter.notifyDataSetChanged();
+						dialog.dismiss();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				} else {
+					Toast.makeText(getApplication(), "Please fill in correct values", Toast.LENGTH_SHORT).show();
+				}
 			}
 		});
+    	
     	dialog.setNegativeButton("Cancel", new OnClickListener() {
 			
 			@Override

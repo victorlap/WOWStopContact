@@ -49,8 +49,14 @@ public class SocketClientManager implements OnSocManagerTaskCompleted {
 	
 	public void addWsc(WSc wsc) throws IOException {
 			SocketClient sClient = new SocketClient(context, this);
-			sClient.connect(InetAddress.getByName(wsc.getHostname()), wsc.getPort(), 10000);
+			sClient.connect(wsc.getHostname(), wsc.getPort(), 10000);
 			clientList.put(wsc, sClient);
+	}
+	
+	public void removeWsc(WSc wsc) {
+		SocketClient sClient = clientList.get(wsc);
+		sClient.disconnect();
+		clientList.remove(wsc);
 	}
 
 	/**
