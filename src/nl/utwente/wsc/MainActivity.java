@@ -53,7 +53,7 @@ public class MainActivity extends Activity {
     
     private void backToAddress() {
     	stopSocketManager();
-    	Intent intent = new Intent(this, AddressActivity.class);
+    	Intent intent = new Intent(this, WSCActivity.class);
 		intent.putExtra(MainActivity.EXTRA_INETADDRESS, mInetAddress);
 		intent.putExtra(MainActivity.EXTRA_PORTNUMBER, mPortNumber);
 		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -116,7 +116,8 @@ public class MainActivity extends Activity {
 			@Override
 			public void run() {
 		    	try {
-					outlet = new SocManagerClient(ref, );
+					outlet = new SocManagerClient(ref, callback);
+					outlet.connect(InetAddress.getByName(mInetAddress), mPortNumber, 10000);
 					toastMessage(ref, "Succes! (" + InetAddress.getByName(mInetAddress) + 
 							":" + mPortNumber, false);
 					outlet.getPowerValues();

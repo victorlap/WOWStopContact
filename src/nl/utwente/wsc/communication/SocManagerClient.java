@@ -233,7 +233,7 @@ public class SocManagerClient extends AsyncTask<String, Integer, Object> {
      * Shuts down client nicely.
      */
     public void disconnect() {
-    	doInBackground(ValueType.DISCONNECTING, null);
+    	doInBackground(new String[]{ValueType.DISCONNECTING+""});
     }
     
     private SSLContext getSSLContext(InputStream certificate) {
