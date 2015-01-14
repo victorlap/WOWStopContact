@@ -201,19 +201,19 @@ public class SocketClient extends AsyncTask<String, Integer, Object> {
     	return performAsyncAction(ValueType.VALUES_COLOR);
     }
     
+    /**
+     * Shuts down client nicely.
+     */
+    public boolean disconnect() {
+    	return performAsyncAction(ValueType.DISCONNECTING);
+    }
+    
     private boolean performAsyncAction(ValueType type) {
     	if (stop) {
     		return false;
     	}
     	doInBackground(new String[]{type.toString()});
         return true;
-    }
-    
-    /**
-     * Shuts down client nicely.
-     */
-    public void disconnect() {
-    	doInBackground(new String[]{ValueType.DISCONNECTING.toString()});
     }
     
     private SSLContext getSSLContext(InputStream certificate) {

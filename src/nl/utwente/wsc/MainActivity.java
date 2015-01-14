@@ -3,10 +3,8 @@ package nl.utwente.wsc;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.List;
 
 import nl.utwente.wsc.communication.OnSocManagerTaskCompleted;
-import nl.utwente.wsc.communication.SocketClient;
 import nl.utwente.wsc.communication.ValueType;
 import nl.utwente.wsc.models.WSc;
 import android.app.AlertDialog;
@@ -14,7 +12,6 @@ import android.app.ListActivity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -39,8 +36,7 @@ public class MainActivity extends ListActivity {
 	private String mInetAddress;
 	private int mPortNumber;
 	
-	//private List<SocManagerClient> outlets; TODO should be like this
-	private List<SocketClient> outlets;
+	private SocketClientManager manager;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +45,7 @@ public class MainActivity extends ListActivity {
         setupCallbackListener();
         startSocketManager();
         
-        ArrayList<WSc> list = new ArrayList<WSc>(manager.getAll);
+        ArrayList<WSc> list = new ArrayList<WSc>(manager.getAll());
         ListAdapter adapter = new ArrayAdapter<WSc>(this, android.R.layout.simple_list_item_1, list);
 		
 		setListAdapter(adapter);
@@ -71,7 +67,7 @@ public class MainActivity extends ListActivity {
     @Override
     protected void onDestroy() {
     	super.onDestroy();
-    	
+    	stopSocketManager();
     }
 
     @Override
@@ -107,47 +103,12 @@ public class MainActivity extends ListActivity {
 		};		
 	}
     
-    /*private void stopSocketManager() {
-    	if (outlet != null) {
-			outlet.disconnect();
-			outlet = null;
-			toastMessage(this, "Stopped client succesfully", false);
-    	}
-    }*/
-    
     private void startSocketManager() {
-    	/*if (outlet != null) {
-    		return;
-    	}*/
-    	Intent i = getIntent();
-    	mInetAddress = "130.89.236.220";//i.getStringExtra(EXTRA_INETADDRESS);
-    	mPortNumber = 7331;//i.getIntExtra(EXTRA_PORTNUMBER, DEFAULT_PORTNUMBER);
-    	final MainActivity ref = this;
-    	/*Thread thread = new Thread(new Runnable() {		
-			@Override
-			public void run() {
-		    	try {
-					outlet = new SocketClient(ref, callback);
-					outlet.connect(InetAddress.getByName(mInetAddress), mPortNumber, 10000);
-		        } catch (UnknownHostException e) {
-		        	toastMessage(ref, "No WSc could be found on this hostname", false);
-					Log.e(TAG, e.getMessage());			
-		        } catch (IOException e) {
-		        	toastMessage(ref, "Something went wrong, please try again later or check the hostname and port", false);
-					Log.e(TAG, e.getMessage());			
-				}		
-			}
-		});
-    	thread.setDaemon(true);
-    	thread.start();*/
+    	manager = new SocketClientManager(this);
     }
     
-    private void toastMessage(final Context context, final String message, final boolean displayLong) {
-    	runOnUiThread(new Runnable() {
-    	    public void run() {
-    	        Toast.makeText(context, message, displayLong ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT).show();
-    	    }
-    	});
+    private void stopSocketManager() {
+    	manager.stop();
     }
     
     private void showAddWscDialog() {
@@ -187,5 +148,13 @@ public class MainActivity extends ListActivity {
 		});
     	
     	dialog.show();
+    }
+      
+    public void toastMessage(final Context context, final String message, final boolean displayLong) {
+    	runOnUiThread(new Runnable() {
+    	    public void run() {
+    	        Toast.makeText(context, message, displayLong ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT).show();
+    	    }
+    	});
     }
 }

@@ -1,12 +1,27 @@
 package nl.utwente.wsc.communication;
 
 /**
- * The type of packet.
+ * The type of color a WSc currently emits.
  * 
  * @author rvemous
  */
 public enum ColorType {
-    NONE, GREEN, ORANGE, RED;
+	/**
+	 * LED of the WSc is turned off.
+	 */
+    NONE, 
+    /**
+     * LED of WSc emits green light.
+     */
+    GREEN, 
+    /**
+     * LED of WSc emits orange light.
+     */
+    ORANGE, 
+    /**
+     * LED of WSc emits red light.
+     */
+    RED;
                 
     /**
      * Gets the color type belonging to this string.
