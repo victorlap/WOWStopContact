@@ -41,8 +41,7 @@ public class MainActivity extends ListActivity {
 	private String mInetAddress;
 	private int mPortNumber;
 	
-	//private List<SocManagerClient> outlets; TODO should be like this
-	private List<SocketClient> outlets;
+	private SocketClientManager manager;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +71,7 @@ public class MainActivity extends ListActivity {
     @Override
     protected void onDestroy() {
     	super.onDestroy();
-    	
+    	stopSocketManager();
     }
 
     @Override
@@ -108,47 +107,12 @@ public class MainActivity extends ListActivity {
 		};		
 	}
     
-    /*private void stopSocketManager() {
-    	if (outlet != null) {
-			outlet.disconnect();
-			outlet = null;
-			toastMessage(this, "Stopped client succesfully", false);
-    	}
-    }*/
-    
     private void startSocketManager() {
-    	/*if (outlet != null) {
-    		return;
-    	}*/
-    	Intent i = getIntent();
-    	mInetAddress = "130.89.236.220";//i.getStringExtra(EXTRA_INETADDRESS);
-    	mPortNumber = 7331;//i.getIntExtra(EXTRA_PORTNUMBER, DEFAULT_PORTNUMBER);
-    	final MainActivity ref = this;
-    	/*Thread thread = new Thread(new Runnable() {		
-			@Override
-			public void run() {
-		    	try {
-					outlet = new SocketClient(ref, callback);
-					outlet.connect(InetAddress.getByName(mInetAddress), mPortNumber, 10000);
-		        } catch (UnknownHostException e) {
-		        	toastMessage(ref, "No WSc could be found on this hostname", false);
-					Log.e(TAG, e.getMessage());			
-		        } catch (IOException e) {
-		        	toastMessage(ref, "Something went wrong, please try again later or check the hostname and port", false);
-					Log.e(TAG, e.getMessage());			
-				}		
-			}
-		});
-    	thread.setDaemon(true);
-    	thread.start();*/
+    	manager = new SocketClientManager(this);
     }
     
-    private void toastMessage(final Context context, final String message, final boolean displayLong) {
-    	runOnUiThread(new Runnable() {
-    	    public void run() {
-    	        Toast.makeText(context, message, displayLong ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT).show();
-    	    }
-    	});
+    private void stopSocketManager() {
+    	manager.stop();
     }
     
     private void showAddWscDialog() {
@@ -188,5 +152,13 @@ public class MainActivity extends ListActivity {
 		});
     	
     	dialog.show();
+    }
+      
+    public void toastMessage(final Context context, final String message, final boolean displayLong) {
+    	runOnUiThread(new Runnable() {
+    	    public void run() {
+    	        Toast.makeText(context, message, displayLong ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT).show();
+    	    }
+    	});
     }
 }

@@ -1,12 +1,13 @@
 package nl.utwente.wsc.models;
 
 import java.io.Serializable;
+import java.util.Random;
 
 
 public class WSc implements Serializable {
 
 	private static final long serialVersionUID = -8500471167788498880L;
-	
+
 	private String name;
 	private String hostname;
 	private int port;
