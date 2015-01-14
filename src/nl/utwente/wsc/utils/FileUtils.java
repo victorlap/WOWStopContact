@@ -1,5 +1,6 @@
 package nl.utwente.wsc.utils;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -13,6 +14,9 @@ public final class FileUtils {
 	
 	private final static String WSC_LIST_PATH = "wsc_array_list.tmp";
 
+	public static boolean hasWscList() {
+		return new File(WSC_LIST_PATH).exists();
+	}
 
 	public static void saveToFile(ArrayList<WSc> list) throws IOException {
     	FileOutputStream fileOut = new FileOutputStream(WSC_LIST_PATH);

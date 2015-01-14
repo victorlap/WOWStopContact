@@ -38,7 +38,6 @@ public class WSCActivity extends ListActivity {
 	    	try {
 				FileUtils.saveToFile(list);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
