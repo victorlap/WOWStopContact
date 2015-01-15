@@ -42,7 +42,7 @@ public class MainActivity extends ListActivity {
         //BASE_IP = getBaseIP();        
         startSocketManager();
         list = manager.getDevices();
-        adapter = new WscAdapter(this, list, manager);
+        adapter = new WscAdapter(this, list, manager, this);
 
         setListAdapter(adapter);
         
@@ -52,7 +52,6 @@ public class MainActivity extends ListActivity {
 			@Override
 			public void onClick(View v) {
 				manager.setDevicesState(toggle_devices.isChecked());
-				adapter.turnOnAllSpinners();
 			}
 		});
     }
@@ -197,9 +196,5 @@ public class MainActivity extends ListActivity {
     	        Toast.makeText(context, message, displayLong ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT).show();
     	    }
     	});
-    }
-    
-    public void turnOffSpinner(int position) { 
-    	adapter.turnOffSpinner(position);
     }
 }

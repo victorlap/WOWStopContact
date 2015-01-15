@@ -20,11 +20,13 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 	private List<WSc> objects;
 	private SocketClientManager manager;
 	private ArrayList<ProgressBar> pbs = new ArrayList<ProgressBar>();
+	private MainActivity mainActivity;
 
-	public WscAdapter(Context context, List<WSc> objects, SocketClientManager manager) {
+	public WscAdapter(Context context, List<WSc> objects, SocketClientManager manager, MainActivity mainActivity) {
 		super(context, R.layout.listitem_wsc, objects);
 		this.objects = objects;
 		this.manager = manager;
+		this.mainActivity = mainActivity;
 	}
 
 	@Override
@@ -37,65 +39,55 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 			convertView = inflater.inflate(R.layout.listitem_wsc, null);
 		}
 		
-		final TextView name = (TextView) convertView.findViewById(R.id.wsc_name);
-		final ImageView powerImage = (ImageView) convertView.findViewById(R.id.powerImage);
-		final ProgressBar progressBar = (ProgressBar) convertView.findViewById(R.id.progressBar);
-		final ToggleButton toggleButton = (ToggleButton) convertView.findViewById(R.id.toggleButton);
-		
 		final WSc wsc = objects.get(position);
 		
 		if(wsc != null) {
 			
+			final TextView name = (TextView) convertView.findViewById(R.id.wsc_name);
 			name.setText(wsc.toString());
 			
+			final ToggleButton toggleButton = (ToggleButton) convertView.findViewById(R.id.toggleButton);
 			toggleButton.setChecked(wsc.isTurnedOn());
+			toggleButton.setEnabled(wsc.isConnected());
 			toggleButton.setOnClickListener(new OnClickListener() {
 				
 				@Override
 				public void onClick(View v) {
+					wsc.setBusy(true);
 					wsc.setTurnedOn(toggleButton.isChecked());
 					manager.setDeviceState(wsc, toggleButton.isChecked());
-					updateWscColor(wsc, powerImage);
+					mainActivity.updateList();
 				}
 			});
 			
-			updateWscColor(wsc, powerImage);
+			final ImageView powerImage = (ImageView) convertView.findViewById(R.id.powerImage);
+			switch(wsc.getColor()) {
+				case RED:
+					powerImage.setImageResource(R.drawable.ic_color_red);
+					break;
+				case ORANGE:
+					powerImage.setImageResource(R.drawable.ic_color_orange);
+					break;
+				case GREEN:
+					powerImage.setImageResource(R.drawable.ic_color_green);
+					break;
+				case NONE:
+					powerImage.setImageResource(R.drawable.ic_color_none);
+					break;
+			}
 			
-			toggleButton.setEnabled(wsc.isConnected());
+			final ProgressBar progressBar = (ProgressBar) convertView.findViewById(R.id.progressBar);
 			
-			pbs.add(progressBar);
+			if(wsc.isBusy()) {
+				progressBar.setVisibility(View.VISIBLE);
+			} else {
+				progressBar.setVisibility(View.GONE);
+			}
 			
 		}
 		
 		return convertView;
 
-	}
-	
-	private void updateWscColor(WSc wsc, ImageView powerImage) {
-		switch(wsc.getColor()) {
-			case RED:
-				powerImage.setImageResource(R.drawable.ic_color_red);
-				break;
-			case ORANGE:
-				powerImage.setImageResource(R.drawable.ic_color_orange);
-				break;
-			case GREEN:
-				powerImage.setImageResource(R.drawable.ic_color_green);
-				break;
-			case NONE:
-				powerImage.setImageResource(R.drawable.ic_color_none);
-				break;
-		}
-	}
-	
-	public void turnOnAllSpinners() {
-		for(ProgressBar pb : pbs) {
-			pb.setVisibility(View.VISIBLE);
-		}
-	}
-	
-	public void turnOffSpinner(int position) {
-		pbs.get(position).setVisibility(View.GONE);
 	}
 
 }
