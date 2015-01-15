@@ -3,6 +3,8 @@ package nl.utwente.wsc;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
+<<<<<<< HEAD
+import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -11,9 +13,11 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.ArrayList;
+=======
+>>>>>>> c8df0e44e7f5f2ce35d127186b92536ccce742d9
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.Set;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
@@ -24,8 +28,16 @@ import nl.utwente.wsc.communication.SocketClient;
 import nl.utwente.wsc.communication.ValueType;
 import nl.utwente.wsc.models.WSc;
 import nl.utwente.wsc.utils.FileUtils;
+import android.app.ListActivity;
+import android.content.Context;
+<<<<<<< HEAD
 import android.database.Observable;
 import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ListAdapter;
+=======
+>>>>>>> c8df0e44e7f5f2ce35d127186b92536ccce742d9
 
 public class SocketClientManager extends Observable<String> implements OnSocManagerTaskCompleted {
     public static final String TAG = "SocketClientManager";
@@ -34,6 +46,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
     private static SSLContext SSLC;
 	
 	LinkedHashMap<WSc, SocketClient> clientList = new LinkedHashMap<WSc, SocketClient>();
+<<<<<<< HEAD
 	private MainActivity context;
 
 	public SocketClientManager(MainActivity c) throws IOException {
@@ -45,6 +58,17 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 					SocketClient sClient = new SocketClient(context, SSLC, this);
 					sClient.connect(InetAddress.getByName(wsc.getHostname()), wsc.getPort(), 10000);
 					clientList.put(wsc, new SocketClient(context, SSLC, this));
+=======
+	private Context context;
+
+	public SocketClientManager(Context c) {
+		
+		this.context = c;
+		if(FileUtils.hasWscList()) {
+			try {
+				for(WSc wsc : FileUtils.getWSCListFromFile()) {
+					addWsc(wsc);
+>>>>>>> c8df0e44e7f5f2ce35d127186b92536ccce742d9
 				}
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
@@ -93,10 +117,17 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 		
 	}
 	
-	public List<WSc> getDevices() {
-		return new ArrayList<WSc>(clientList.keySet());
+	public Set<WSc> getAll() {
+		return clientList.keySet();
 	}
-
+	
+	public void addWsc(WSc wsc) throws IOException {
+			SocketClient sClient = new SocketClient(context, this);
+			sClient.connect(wsc.getHostname(), wsc.getPort(), 10000);
+			clientList.put(wsc, sClient);
+	}
+	
+<<<<<<< HEAD
 	public boolean addDevice(WSc wsc) {
 		SocketClient client = new SocketClient(context, SSLC, this);
 		try {
@@ -115,6 +146,14 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 		clientList.remove(device);		
 	}
 	
+=======
+	public void removeWsc(WSc wsc) {
+		SocketClient sClient = clientList.get(wsc);
+		sClient.disconnect();
+		clientList.remove(wsc);
+	}
+
+>>>>>>> c8df0e44e7f5f2ce35d127186b92536ccce742d9
 	/**
 	 * Gets the state (on or off) of every connected WSc.<br>
 	 * Array can contain nulls when the device(s) do(es) not respond.
