@@ -12,6 +12,7 @@ public class WSc implements Serializable {
 	private String hostname;
 	private int port;
 	private boolean turned_on;
+	private boolean connected;
 	private ColorType color;
 	
 	public WSc(String name, String hostname, int port) {
@@ -48,6 +49,14 @@ public class WSc implements Serializable {
 	
 	public boolean isTurnedOn() {
 		return turned_on;
+	}
+	
+	public void setConnected(boolean connected) {
+		this.connected = connected;
+	}
+	
+	public boolean isConnected() {
+		return connected;
 	}
 	
 	public void setColor(ColorType color) {

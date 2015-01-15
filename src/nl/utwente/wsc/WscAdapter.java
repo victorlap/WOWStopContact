@@ -57,6 +57,10 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 			
 			updateWscColor(wsc, powerImage);
 			
+			if(!wsc.isConnected()) {
+				toggleButton.setEnabled(false);
+			}
+			
 		}
 		
 		return convertView;
@@ -65,15 +69,19 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 	
 	private void updateWscColor(WSc wsc, ImageView powerImage) {
 		switch(wsc.getColor()) {
-		case RED:
-			powerImage.setImageResource(R.drawable.ic_color_red);
-		case ORANGE:
-			powerImage.setImageResource(R.drawable.ic_color_orange);
-		case GREEN:
-			powerImage.setImageResource(R.drawable.ic_color_green);
-		case NONE:
-			powerImage.setImageResource(R.drawable.ic_color_none);
-	}
+			case RED:
+				powerImage.setImageResource(R.drawable.ic_color_red);
+				break;
+			case ORANGE:
+				powerImage.setImageResource(R.drawable.ic_color_orange);
+				break;
+			case GREEN:
+				powerImage.setImageResource(R.drawable.ic_color_green);
+				break;
+			case NONE:
+				powerImage.setImageResource(R.drawable.ic_color_none);
+				break;
+		}
 	}
 
 }
