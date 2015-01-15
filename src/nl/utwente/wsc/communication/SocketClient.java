@@ -37,7 +37,7 @@ import android.util.Log;
  */
 public class SocketClient {
 	
-	public static final int TIMEOUT = 10000;
+	public static final int TIMEOUT = 4000;
 	public static final String TAG = "SocketClient";
     
     private final Object lock = new Object();
@@ -174,13 +174,13 @@ public class SocketClient {
         return packet;
     }
       
-    public void connect(String address, int portNr, int timeout) {
+    public void connect(String address, int portNr) {
     	performAsyncAction(ValueType.CONNECTING, false, 
-    			new String[]{address, portNr+"", timeout+""});
+    			new String[]{address, portNr+"", TIMEOUT+""});
     }   
      
     public void connect(WSc wsc) throws UnknownHostException {
-    	connect(wsc.getHostname(), wsc.getPort(), TIMEOUT);
+    	connect(wsc.getHostname(), wsc.getPort());
     }
     
     public synchronized boolean socketIsOn() throws IOException {
