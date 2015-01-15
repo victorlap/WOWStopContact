@@ -42,7 +42,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 				for(WSc wsc : FileUtils.getWSCListFromFile(mainActivity)) {
 					SocketClient sClient = new SocketClient(mainActivity, SSLC, this);
 					clientList.put(wsc, sClient);
-					sClient.connect(wsc.getHostname(), wsc.getPort(), 10000);
+					sClient.connect(wsc.getHostname(), wsc.getPort());
 				}
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
