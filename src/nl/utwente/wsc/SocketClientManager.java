@@ -90,6 +90,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	}
 
 	public boolean addDevice(WSc wsc) {
+		wsc.setBusy(true);
 		SocketClient client = new SocketClient(mainActivity, SSLC, this);
 		clientList.put(wsc, client);
 		try {
@@ -143,16 +144,9 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	 */
 	public boolean setDevicesState(boolean turnOn) {
 		boolean succes = true;
-		for (SocketClient client : clientList.values()) {
-			try {
-				if (turnOn) {
-					client.turnOnSocket();
-				} else {
-					client.turnOffSocket();
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-				return false;
+		for (WSc wsc : clientList.keySet()) {
+			if(!setDeviceState(wsc, turnOn)) {
+				succes = false;
 			}
 		}
 		return succes;
@@ -165,20 +159,11 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	 * @return whether this has succeeded
 	 */	
 	public boolean setDeviceState(int index, boolean turnOn) {
-		try {
-			if (turnOn) {
-				clientList.get(getKey(index)).turnOnSocket();
-			} else {
-				clientList.get(getKey(index)).turnOffSocket();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
-		}
-		return true;
+		return setDeviceState(getKey(index), turnOn);
 	}
 	
 	public boolean setDeviceState(WSc wsc, boolean turnOn ) {
+		wsc.setBusy(true);
 		try {
 			if (turnOn) {
 				clientList.get(wsc).turnOnSocket();
