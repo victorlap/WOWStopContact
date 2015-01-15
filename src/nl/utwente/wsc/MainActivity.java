@@ -32,6 +32,8 @@ public class MainActivity extends ListActivity {
 	private SocketClientManager manager;
 	List<WSc> list;
 	
+	final private ToggleButton toggle_devices = (ToggleButton) findViewById(R.id.allDevicesToggle);
+	
 	private WscAdapter adapter;
 	
     @Override
@@ -45,12 +47,13 @@ public class MainActivity extends ListActivity {
 
         setListAdapter(adapter);
         
-        final ToggleButton toggle_devices = (ToggleButton) findViewById(R.id.allDevicesToggle);
         toggle_devices.setOnClickListener(new View.OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
-				manager.setDevicesState(toggle_devices.isChecked());
+				toggle_devices.setChecked(false);
+				toggle_devices.setEnabled(false);
+				manager.setDevicesState(false);
 			}
 		});
     }
@@ -196,5 +199,9 @@ public class MainActivity extends ListActivity {
     	        Toast.makeText(context, message, displayLong ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT).show();
     	    }
     	});
+    }
+    
+    public void setToggleDevices(boolean enabled) {
+    	toggle_devices.setEnabled(enabled);
     }
 }

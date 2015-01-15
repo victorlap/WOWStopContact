@@ -43,12 +43,15 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 		
 		if(wsc != null) {
 			
+			if(wsc.isTurnedOn()) {
+				mainActivity.setToggleDevices(true);
+			}
+			
 			final TextView name = (TextView) convertView.findViewById(R.id.wsc_name);
 			name.setText(wsc.toString());
 			
 			final ToggleButton toggleButton = (ToggleButton) convertView.findViewById(R.id.toggleButton);
 			toggleButton.setChecked(wsc.isTurnedOn());
-			toggleButton.setEnabled(wsc.isConnected());
 			toggleButton.setOnClickListener(new OnClickListener() {
 				
 				@Override
@@ -79,8 +82,10 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 			final ProgressBar progressBar = (ProgressBar) convertView.findViewById(R.id.progressBar);
 			
 			if(wsc.isBusy()) {
+				toggleButton.setEnabled(false);
 				progressBar.setVisibility(View.VISIBLE);
 			} else {
+				toggleButton.setEnabled(wsc.isConnected());
 				progressBar.setVisibility(View.GONE);
 			}
 			
