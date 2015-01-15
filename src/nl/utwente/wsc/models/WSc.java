@@ -11,10 +11,10 @@ public class WSc implements Serializable {
 	private String name;
 	private String hostname;
 	private int port;
-	private boolean turned_on;
-	private boolean connected;
-	private ColorType color;
-	private boolean busy;
+	private boolean turnedOn;
+	private transient boolean connected;
+	private transient ColorType color;
+	private transient boolean busy;
 	
 	public WSc(String name, String hostname, int port) {
 		this.name = name;
@@ -40,7 +40,7 @@ public class WSc implements Serializable {
 	}
 	
 	public void setTurnedOn(boolean turned_on) {
-		this.turned_on = turned_on;
+		this.turnedOn = turned_on;
 		if(turned_on) {
 			setColor(ColorType.GREEN);
 		} else {
@@ -49,7 +49,7 @@ public class WSc implements Serializable {
 	}
 	
 	public boolean isTurnedOn() {
-		return turned_on;
+		return turnedOn;
 	}
 	
 	public void setConnected(boolean connected) {

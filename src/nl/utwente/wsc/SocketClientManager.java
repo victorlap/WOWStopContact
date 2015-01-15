@@ -258,7 +258,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 
 	public void stop() {
 		for(SocketClient client : clientList.values()) {
-			client.disconnect();
+			client.disconnect();		
 		}
 		try {
 			FileUtils.saveToFile(mainActivity, new ArrayList<WSc>(clientList.keySet()));
