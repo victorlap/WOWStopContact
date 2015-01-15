@@ -2,7 +2,7 @@ package nl.utwente.wsc.communication;
 
 public enum ValueType {
 
-	IS_ON, TURN_OFF, TURN_ON, VALUES_POWER, VALUES_COLOR, CONNECTING, DISCONNECTING;
+	IS_ON, TURN_OFF, TURN_ON, VALUES_POWER, VALUES_COLOR, CONNECTING, DISCONNECTING, CONN_DEAD;
 
 	/**
 	 * Gets the value type belonging to this string.

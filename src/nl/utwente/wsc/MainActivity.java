@@ -1,24 +1,14 @@
 package nl.utwente.wsc;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.List;
 
-import nl.utwente.wsc.communication.OnSocManagerTaskCompleted;
-import nl.utwente.wsc.communication.SocketClient;
-import nl.utwente.wsc.communication.ValueType;
 import nl.utwente.wsc.models.WSc;
-import nl.utwente.wsc.utils.FileUtils;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
@@ -36,20 +26,13 @@ public class MainActivity extends ListActivity {
 	public static final String EXTRA_PORTNUMBER = "extra_portnumber";
 	public static final int DEFAULT_PORTNUMBER = 7331;
 	
-	private OnSocManagerTaskCompleted callback;
-	
-	private String mInetAddress;
-	private int mPortNumber;
-	
 	private SocketClientManager manager;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        setupCallbackListener();
         startSocketManager();
-        
         //ListAdapter adapter = new ArrayAdapter<WSc>(this, android.R.layout.simple_list_item_1, list);
 		
 		//setListAdapter(adapter);
@@ -87,28 +70,17 @@ public class MainActivity extends ListActivity {
     			return super.onOptionsItemSelected(item);
     	}
     }
-    
-    private void setupCallbackListener() {
-    	final MainActivity ref = this;
-        callback = new OnSocManagerTaskCompleted() {			      	
-        	@Override
-			public void doneTask(InetAddress address, ValueType type, Object value) {
-				try {
-					if (type.equals(ValueType.CONNECTING)) {	
-						toastMessage(ref, "Succes! (" + InetAddress.getByName(mInetAddress) + 
-								":" + mPortNumber, false);
-						//TODO enable 
-					}
-				} catch (IOException e) {
-					Log.e(TAG, e.getLocalizedMessage());
-				}
-				
-			}
-		};		
-	}
-    
+
     private void startSocketManager() {
-    	manager = new SocketClientManager(this);
+    	try {
+			manager = new SocketClientManager(this);
+		} catch (IOException e) {
+			e.printStackTrace();
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e1) {}
+			System.exit(20);
+		}
     }
     
     private void stopSocketManager() {
@@ -136,11 +108,12 @@ public class MainActivity extends ListActivity {
 
     	dialog.setView(layout);
     	
-    	dialog.setPositiveButton("Add", new OnClickListener() {
-			
+    	dialog.setPositiveButton("Add", new OnClickListener() {		
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				// TODO
+				manager.addDevice(new WSc(nameBox.getText().toString(), 
+						hostnameBox.getText().toString(), 
+						Integer.parseInt(portBox.getText().toString())));
 			}
 		});
     	dialog.setNegativeButton("Cancel", new OnClickListener() {

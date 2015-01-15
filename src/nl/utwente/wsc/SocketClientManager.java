@@ -1,12 +1,23 @@
 package nl.utwente.wsc;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 import nl.utwente.wsc.communication.ColorType;
 import nl.utwente.wsc.communication.OnSocManagerTaskCompleted;
@@ -14,20 +25,32 @@ import nl.utwente.wsc.communication.SocketClient;
 import nl.utwente.wsc.communication.ValueType;
 import nl.utwente.wsc.models.WSc;
 import nl.utwente.wsc.utils.FileUtils;
+import android.app.ListActivity;
 import android.content.Context;
-import android.graphics.Color;
+import android.database.Observable;
+import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ListAdapter;
 
-public class SocketClientManager implements OnSocManagerTaskCompleted {
+public class SocketClientManager extends Observable<String> implements OnSocManagerTaskCompleted {
+    public static final String TAG = "SocketClientManager";
+	
+	private static final String CERTIFICATE = "server.crt";	
+    private static SSLContext SSLC;
 	
 	LinkedHashMap<WSc, SocketClient> clientList = new LinkedHashMap<WSc, SocketClient>();
+	private MainActivity context;
 
-	public SocketClientManager(Context c) {
+	public SocketClientManager(MainActivity c) throws IOException {
+		context = c;
+		getSSLContext(context.getAssets().open(CERTIFICATE));
 		if(FileUtils.hasWscList()) {
 			try {
-				for(WSc wsc : FileUtils.getWSCListFromFile()) {
-					SocketClient sClient = new SocketClient(c, this);
+				for(WSc wsc : FileUtils.getWSCListFromFile(context)) {
+					SocketClient sClient = new SocketClient(context, SSLC, this);
 					sClient.connect(InetAddress.getByName(wsc.getHostname()), wsc.getPort(), 10000);
-					clientList.put(wsc, new SocketClient(c, this));
+					clientList.put(wsc, new SocketClient(context, SSLC, this));
 				}
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
@@ -37,16 +60,65 @@ public class SocketClientManager implements OnSocManagerTaskCompleted {
 				e.printStackTrace();
 			}
 		}
+	    addDevice(new WSc("TEST", "192.168.0.123", 7331));
 	}
 
+	/**
+	 * Place where all callbacks will end up and from here they will be 
+	 * send to all observers.
+	 */
 	@Override
 	public void doneTask(InetAddress address, ValueType type, Object value) {
-		// TODO Auto-generated method stub
+		if (type.equals(ValueType.IS_ON)) {		
+		} else if (type.equals(ValueType.TURN_OFF)) {
+		} else if (type.equals(ValueType.TURN_ON)) {
+		} else if (type.equals(ValueType.VALUES_POWER)) {
+		} else if (type.equals(ValueType.VALUES_COLOR)) {
+		} else if (type.equals(ValueType.CONNECTING)) {
+			if (value.equals(false)) {
+				//TODO connecting does not have to succeed to be able to add the device
+				context.toastMessage(context, "Adding device failed: " + address.getHostAddress(), true);
+				clientList.remove(getKey(address.getHostName()));
+			} else {
+				context.toastMessage(context, "Adding device succes: " + address.getHostAddress(), true);
+				Thread set = new Thread(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							Thread.sleep(500);
+						} catch (InterruptedException e) {}
+						setDevicesState(true);						
+					}
+				});
+				set.start();
+			}
+		} else if (type.equals(ValueType.DISCONNECTING)) {
+		} else if (type.equals(ValueType.CONN_DEAD)) {
+			
+		}
 		
 	}
 	
 	public List<WSc> getDevices() {
 		return new ArrayList<WSc>(clientList.keySet());
+	}
+	
+	public boolean addDevice(WSc wsc) {
+		SocketClient client = new SocketClient(context, SSLC, this);
+		try {
+			client.connect(wsc);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+		clientList.put(wsc, client);
+		return true;
+	}
+	
+	public void removeDevice(int index) {
+		WSc device = getKey(index);
+		clientList.get(device).disconnect();
+		clientList.remove(device);		
 	}
 	
 	/**
@@ -145,12 +217,87 @@ public class SocketClientManager implements OnSocManagerTaskCompleted {
 		}
 		return it.next();
 	}
+	
+	private WSc getKey(String hostName) {
+		Iterator<WSc> it = clientList.keySet().iterator();
+		while (it.hasNext()) {
+			WSc device = it.next();
+			if (device.getHostname().equals(hostName)) {
+				return device;
+			}
+		} 
+		return null;
+	}
 
 	public void stop() {
 		for(SocketClient client : clientList.values()) {
 			client.disconnect();
 		}
-		
+		try {
+			FileUtils.saveToFile(context, new ArrayList<WSc>(clientList.keySet()));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
+	
+    private SSLContext getSSLContext(InputStream certificate) {
+    	if (SSLC != null) {
+    		return SSLC;
+    	}
+    	// Load CA from a .crt file
+    	CertificateFactory cf = null;
+		try {
+			cf = CertificateFactory.getInstance("X.509");
+		} catch (CertificateException e) {
+			Log.e(TAG, "Cannot load certificate factory for X.509: " + e);
+			System.exit(10);
+		}
+		Certificate ca = null;
+    	try {
+    	    ca = cf.generateCertificate(certificate);
+    	    //System.out.println("ca=" + ((X509Certificate) ca).getSubjectDN());
+    	} catch (CertificateException e) {
+			Log.e(TAG, "Cannot generate certificate: " + e);
+			System.exit(12);
+		} finally {
+    	    try {
+				certificate.close();
+			} catch (IOException e) {
+				Log.e(TAG, "Cannot close certificate file: " + e);
+				System.exit(13);				
+			}
+    	}
+		try {
+	    	// Create a KeyStore containing our trusted CAs
+	    	String keyStoreType = KeyStore.getDefaultType();
+	    	KeyStore keyStore = null;
+			keyStore = KeyStore.getInstance(keyStoreType);
+			keyStore.load(null, null);
+			keyStore.setCertificateEntry("WSc", ca);
+	    	// Create a TrustManager that trusts the CAs in our KeyStore
+	    	String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
+	    	TrustManagerFactory tm = TrustManagerFactory.getInstance(tmfAlgorithm);
+	    	tm.init(keyStore);
+	    	// Create an SSLContext that uses our TrustManager
+	    	SSLC = SSLContext.getInstance("TLS");
+	    	SSLC.init(null, tm.getTrustManagers(), null);
+		} catch (KeyStoreException e) {
+			Log.e(TAG, "Cannot generate keystore: " + e);
+			System.exit(14);	
+		} catch (CertificateException e) {
+			Log.e(TAG, "Cannot use certificate: " + e);
+			System.exit(15);	
+		} catch (NoSuchAlgorithmException e) {
+			// will not happen
+			System.exit(16);
+		} catch (IOException e) {
+			// will not happen
+			System.exit(17);
+		} catch (KeyManagementException e) {
+			// will not happen
+			System.exit(18);
+		}   
+		return SSLC;
+    }
 
 }

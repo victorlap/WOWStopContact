@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -30,6 +31,7 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManagerFactory;
 
 import nl.utwente.wsc.exceptions.InvalidPacketException;
+import nl.utwente.wsc.models.WSc;
 import nl.utwente.wsc.utils.Timer;
 import nl.utwente.wsc.utils.Tools;
 
@@ -44,7 +46,7 @@ import android.util.Log;
  *
  * @author rvemous
  */
-public class SocketClient extends AsyncTask<String, Integer, Object> {
+public class SocketClient {
 	
 	public static final int TIMEOUT = 10000;
 	public static final String TAG = "SocketClient";
@@ -53,16 +55,15 @@ public class SocketClient extends AsyncTask<String, Integer, Object> {
     
     private boolean stop = true;
     
-    private SSLSocket sock;
-    private static SSLContext sslc;
-    private static final String CERTIFICATE = "server.crt";
+    protected SSLSocket sock;
+    protected SSLContext sslContext;
     
-    private BufferedInputStream in;
-    private BufferedOutputStream out;
+    protected BufferedInputStream in;
+    protected BufferedOutputStream out;
     
-    private volatile LinkedList<Packet> receiveBuffer;
+    protected volatile LinkedList<Packet> receiveBuffer;
     
-    private OnSocManagerTaskCompleted callBack;
+    protected OnSocManagerTaskCompleted callBack;
     
     static {
         System.setProperty("javax.net.ssl.trustStorePassword", "WScDrone5A");
@@ -77,23 +78,21 @@ public class SocketClient extends AsyncTask<String, Integer, Object> {
      * @param timeout time-out to use for connecting
      * @throws IOException 
      */
-    public SocketClient(Context context, OnSocManagerTaskCompleted callBack) { 
+    public SocketClient(Context context, SSLContext sslContext, OnSocManagerTaskCompleted callBack) { 
     	this.callBack = callBack;
-    	try {
-			getSSLContext(context.getAssets().open(CERTIFICATE));
-		} catch (IOException e) {
-			Log.e(TAG, "Cannot load certificate: " + e);
-			System.exit(15);
-		}
+    	this.sslContext = sslContext;
     }
     
-    public void connect(InetAddress address, int portNr, int timeout) throws IOException {
-    	doInBackground(new String[]{ValueType.CONNECTING.toString(), 
-    			address.getHostAddress(), portNr+"", timeout+""});
-    }    
+    protected void finishConnecting() throws IOException {
+        in = new BufferedInputStream(sock.getInputStream());
+        out = new BufferedOutputStream(sock.getOutputStream());
+        receiveBuffer = new LinkedList<Packet>();
+        startReceiverThread();  	
+        stop = false;   	
+    }
     
     public boolean alive() {
-        return !stop;
+        return sock != null && !stop;
     }
     
     /**
@@ -155,6 +154,9 @@ public class SocketClient extends AsyncTask<String, Integer, Object> {
 	                    continue;
 	                }
 	                Packet packet = new Packet(header, receiverBuff);
+	                if (new String(packet.getData()).equalsIgnoreCase("DEAD")) {
+	                	callBack.doneTask(sock.getInetAddress(), ValueType.CONN_DEAD, null);
+	                }
 	                synchronized (lock) {
 	                    receiveBuffer.add(packet);
 	                }
@@ -179,6 +181,15 @@ public class SocketClient extends AsyncTask<String, Integer, Object> {
             Tools.waitForMs(50);
         }
         return packet;
+    }
+      
+    public void connect(InetAddress address, int portNr, int timeout) {
+    	performAsyncAction(ValueType.CONNECTING, false, 
+    			new String[]{address.getHostAddress(), portNr+"", timeout+""});
+    }   
+     
+    public void connect(WSc wsc) throws UnknownHostException {
+    	connect(InetAddress.getByName(wsc.getHostname()), wsc.getPort(), TIMEOUT);
     }
     
     public synchronized boolean socketIsOn() throws IOException {
@@ -205,97 +216,64 @@ public class SocketClient extends AsyncTask<String, Integer, Object> {
      * Shuts down client nicely.
      */
     public boolean disconnect() {
-    	return performAsyncAction(ValueType.DISCONNECTING);
+    	stop = true;
+        Tools.waitForMs(100);
+    	return performAsyncAction(ValueType.DISCONNECTING, true);
+    }
+    
+    private boolean performAsyncAction(ValueType type, boolean ifStarted, String... values) {
+    	if (ifStarted && stop) {
+    		return false;
+    	}
+    	String[] data = new String[values.length + 1];
+    	data[0] = type.toString();
+    	for (int i = 1; i < data.length; i++) {
+    		data[i] = values[i - 1];
+    	}
+    	new AsyncCommunication(this, TIMEOUT).execute(data);
+        return true;    	
+    }
+    
+    private boolean performAsyncAction(ValueType type, boolean ifStarted) {
+    	return performAsyncAction(type, ifStarted, new String[]{});
     }
     
     private boolean performAsyncAction(ValueType type) {
-    	if (stop) {
-    		return false;
-    	}
-    	doInBackground(new String[]{type.toString()});
-        return true;
+    	return performAsyncAction(type, true, new String[]{});
     }
     
-    private SSLContext getSSLContext(InputStream certificate) {
-    	if (sslc != null) {
-    		return sslc;
-    	}
-    	// Load CA from a .crt file
-    	CertificateFactory cf = null;
-		try {
-			cf = CertificateFactory.getInstance("X.509");
-		} catch (CertificateException e) {
-			Log.e(TAG, "Cannot load certificate factory for X.509: " + e);
-			System.exit(10);
-		}
-		Certificate ca = null;
-    	try {
-    	    ca = cf.generateCertificate(certificate);
-    	    //System.out.println("ca=" + ((X509Certificate) ca).getSubjectDN());
-    	} catch (CertificateException e) {
-			Log.e(TAG, "Cannot generate certificate: " + e);
-			System.exit(12);
-		} finally {
-    	    try {
-				certificate.close();
-			} catch (IOException e) {
-				Log.e(TAG, "Cannot close certificate file: " + e);
-				System.exit(13);				
-			}
-    	}
-		try {
-	    	// Create a KeyStore containing our trusted CAs
-	    	String keyStoreType = KeyStore.getDefaultType();
-	    	KeyStore keyStore = null;
-			keyStore = KeyStore.getInstance(keyStoreType);
-			keyStore.load(null, null);
-			keyStore.setCertificateEntry("WSc", ca);
-	    	// Create a TrustManager that trusts the CAs in our KeyStore
-	    	String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
-	    	TrustManagerFactory tm = TrustManagerFactory.getInstance(tmfAlgorithm);
-	    	tm.init(keyStore);
-	    	// Create an SSLContext that uses our TrustManager
-	    	sslc = SSLContext.getInstance("TLS");
-	    	sslc.init(null, tm.getTrustManagers(), null);
-		} catch (KeyStoreException e) {
-			Log.e(TAG, "Cannot generate keystore: " + e);
-			System.exit(14);	
-		} catch (CertificateException e) {
-			Log.e(TAG, "Cannot use certificate: " + e);
-			System.exit(15);	
-		} catch (NoSuchAlgorithmException e) {
-			// will not happen
-			System.exit(16);
-		} catch (IOException e) {
-			// will not happen
-			System.exit(17);
-		} catch (KeyManagementException e) {
-			// will not happen
-			System.exit(18);
-		}   
-		return sslc;
-    }
+}
 
+class AsyncCommunication extends AsyncTask<String, Integer, Object> {
+	
+	private SocketClient client;
+	private int timeout;
+	
+	public AsyncCommunication(SocketClient client, int timeout) {
+		this.client = client;
+		this.timeout = timeout;
+	}
+	
 	@Override
 	protected Object doInBackground(String... params) {
 		ValueType type = ValueType.getType(params[0]);
 		Object returnValue = null;
 		try {
 			if (type.equals(ValueType.IS_ON)) {		
-		        sendPacket(Packet.createCommandPacket(Command.isTurnedOn()));
-		        Packet ans = waitForPacket(TIMEOUT);
+		        client.sendPacket(Packet.createCommandPacket(Command.isTurnedOn()));
+		        Packet ans = client.waitForPacket(timeout);
 		        returnValue = Packet.isSuccesResponse(ans);	
 			} else if (type.equals(ValueType.TURN_OFF)) {
-		        sendPacket(Packet.createCommandPacket(Command.turnOff()));
-		        Packet ans = waitForPacket(TIMEOUT);
+				client.sendPacket(Packet.createCommandPacket(Command.turnOff()));
+		        Packet ans = client.waitForPacket(timeout);
 		        returnValue = Packet.isSuccesResponse(ans);	
 			} else if (type.equals(ValueType.TURN_ON)) {
-		        sendPacket(Packet.createCommandPacket(Command.turnOn()));
-		        Packet ans = waitForPacket(TIMEOUT);
+				client.sendPacket(Packet.createCommandPacket(Command.turnOn()));
+		        Packet ans = client.waitForPacket(timeout);
 		        returnValue = Packet.isSuccesResponse(ans);	
 			} else if (type.equals(ValueType.VALUES_POWER)) {
-		        sendPacket(Packet.createCommandPacket(Command.getValues()));  
-		        Packet ans = waitForPacket(TIMEOUT);
+				client.sendPacket(Packet.createCommandPacket(Command.getValues()));  
+		        Packet ans = client.waitForPacket(timeout);
 		        if (!Packet.isDataPacket(ans)) {
 		            return null;
 		        }
@@ -312,49 +290,50 @@ public class SocketClient extends AsyncTask<String, Integer, Object> {
 		        }
 		        returnValue = values;
 			} else if (type.equals(ValueType.VALUES_COLOR)) {
-		    	sendPacket(Packet.createCommandPacket(Command.getColor()));  
-		        Packet ans = waitForPacket(TIMEOUT);
+				client.sendPacket(Packet.createCommandPacket(Command.getColor()));  
+		        Packet ans = client.waitForPacket(timeout);
 		        if (!Packet.isResponsePacket(ans)) {
 		            return null;
 		        }    	
 		        returnValue = ColorType.getType(new String(ans.getData()));
 			} else if (type.equals(ValueType.CONNECTING)) {
-				// Open SSLSocket to wall socket
-		        SocketFactory ssf = sslc.getSocketFactory();
-		        sock = (SSLSocket)ssf.createSocket(params[1], Integer.parseInt(params[2]));
-		        HostnameVerifier hv = HttpsURLConnection.getDefaultHostnameVerifier();
-		        SSLSession session = sock.getSession();
-		        // Verify that the certificate host name is for the wall socket
-		        // This is due to lack of SNI support in the current SSLSocket.
-		        if (!hv.verify("WSc", session)) {
-		            throw new SSLHandshakeException("Expected " + "WSc" +
-		                                            ", found " + session.getPeerPrincipal());
-		        }
-		        in = new BufferedInputStream(sock.getInputStream());
-		        out = new BufferedOutputStream(sock.getOutputStream());
-		        receiveBuffer = new LinkedList<Packet>();
-		        startReceiverThread();  	
-		        returnValue = true;
-		        stop = false;
+				try {
+					// Open SSLSocket to wall socket
+			        SocketFactory ssf = client.sslContext.getSocketFactory();
+			        client.sock = (SSLSocket)ssf.createSocket(params[1], Integer.parseInt(params[2]));
+			        HostnameVerifier hv = HttpsURLConnection.getDefaultHostnameVerifier();
+			        SSLSession session = client.sock.getSession();
+			        // Verify that the certificate host name is for the wall socket
+			        // This is due to lack of SNI support in the current SSLSocket.
+			        if (!hv.verify("WSc", session)) {
+			            throw new SSLHandshakeException("Expected " + "WSc" +
+			                                            ", found " + session.getPeerPrincipal());
+			        }
+			        client.finishConnecting();
+				} catch (IOException e) {
+					e.printStackTrace();
+					client.callBack.doneTask(InetAddress.getByName(params[1]), type, false);
+					return null;
+				}
+				returnValue = true;
 			} else if (type.equals(ValueType.DISCONNECTING)) {
-		        stop = true;
-		        Tools.waitForMs(100);
 		        try {
-		            in.close();
-		            out.close();
-		            sock.close();
+		            client.in.close();
+		            client.out.close();
+		            client.sock.close();
 		        } catch (IOException ex) {/* socket closed by server */}	
+		        client.sock = null;
 		        returnValue = true;
 			}
-		} catch (IOException e) {}
-		callBack.doneTask(sock.getInetAddress(), type, returnValue);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return returnValue;
+		}
+		try {
+			client.callBack.doneTask(client.sock.getInetAddress(), type, returnValue);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return returnValue;
 	}
-	
-	@Override
-	protected void onProgressUpdate(Integer... values) {
-		// TODO use this??
-		super.onProgressUpdate(values);
-	}
-    
 }

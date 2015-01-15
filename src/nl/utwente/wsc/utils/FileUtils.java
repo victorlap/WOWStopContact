@@ -6,8 +6,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
+import java.util.List;
 
+import android.content.Context;
 import nl.utwente.wsc.models.WSc;
 
 public final class FileUtils {
@@ -18,17 +19,17 @@ public final class FileUtils {
 		return new File(WSC_LIST_PATH).exists();
 	}
 
-	public static void saveToFile(ArrayList<WSc> list) throws IOException {
-    	FileOutputStream fileOut = new FileOutputStream(WSC_LIST_PATH);
+	public static void saveToFile(Context c, List<WSc> list) throws IOException {
+		FileOutputStream fileOut = c.openFileOutput(WSC_LIST_PATH, Context.MODE_PRIVATE);
 		ObjectOutputStream out = new ObjectOutputStream(fileOut);
 		out.writeObject(list);
 		out.close();
     }
     
-    public static ArrayList<WSc> getWSCListFromFile() throws IOException, ClassNotFoundException {
-    	FileInputStream fileIn = new FileInputStream(WSC_LIST_PATH);
+    public static List<WSc> getWSCListFromFile(Context c) throws IOException, ClassNotFoundException {
+		FileInputStream fileIn = c.openFileInput(WSC_LIST_PATH);
     	ObjectInputStream in = new ObjectInputStream(fileIn);
-    	ArrayList<WSc> returnlist = (ArrayList<WSc>) in.readObject();
+    	List<WSc> returnlist = (List<WSc>) in.readObject();
     	in.close();
     	return returnlist;
     }
