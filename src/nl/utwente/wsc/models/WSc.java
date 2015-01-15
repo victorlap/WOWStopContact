@@ -73,6 +73,9 @@ public class WSc implements Serializable {
 	}
 	
 	public ColorType getColor() {
+		if (color == null) {
+			color = ColorType.NONE;
+		}
 		return color;
 	}
 	
