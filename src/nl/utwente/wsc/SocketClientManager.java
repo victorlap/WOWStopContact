@@ -34,17 +34,17 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
     private static SSLContext SSLC;
 	
 	LinkedHashMap<WSc, SocketClient> clientList = new LinkedHashMap<WSc, SocketClient>();
-	private MainActivity context;
+	private MainActivity mainActivity;
 
 	public SocketClientManager(MainActivity c) throws IOException {
-		context = c;
-		getSSLContext(context.getAssets().open(CERTIFICATE));
+		mainActivity = c;
+		getSSLContext(mainActivity.getAssets().open(CERTIFICATE));
 		if(FileUtils.hasWscList()) {
 			try {
-				for(WSc wsc : FileUtils.getWSCListFromFile(context)) {
-					SocketClient sClient = new SocketClient(context, SSLC, this);
-					sClient.connect(InetAddress.getByName(wsc.getHostname()), wsc.getPort(), 10000);
-					clientList.put(wsc, new SocketClient(context, SSLC, this));
+				for(WSc wsc : FileUtils.getWSCListFromFile(mainActivity)) {
+					SocketClient sClient = new SocketClient(mainActivity, SSLC, this);
+					sClient.connect(wsc.getHostname(), wsc.getPort(), 10000);
+					clientList.put(wsc, new SocketClient(mainActivity, SSLC, this));
 				}
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
@@ -54,7 +54,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 				e.printStackTrace();
 			}
 		}
-	    addDevice(new WSc("TEST", "192.168.0.123", 7331));
+	    addDevice(new WSc("Mark server", "130.89.232.73", 7331)); //TODO remove
 	}
 
 	/**
@@ -62,7 +62,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	 * send to all observers.
 	 */
 	@Override
-	public void doneTask(InetAddress address, ValueType type, Object value) {
+	public void doneTask(String address, ValueType type, Object value) {
 		if (type.equals(ValueType.IS_ON)) {		
 		} else if (type.equals(ValueType.TURN_OFF)) {
 		} else if (type.equals(ValueType.TURN_ON)) {
@@ -71,10 +71,10 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 		} else if (type.equals(ValueType.CONNECTING)) {
 			if (value.equals(false)) {
 				//TODO connecting does not have to succeed to be able to add the device
-				context.toastMessage(context, "Adding device failed: " + address.getHostAddress(), true);
-				clientList.remove(getKey(address.getHostName()));
+				mainActivity.toastMessage(mainActivity, "Adding device failed: " + address, true);
+				removeDevice(address);
 			} else {
-				context.toastMessage(context, "Adding device succes: " + address.getHostAddress(), true);
+				mainActivity.toastMessage(mainActivity, "Adding device succes: " + address, true);
 				Thread set = new Thread(new Runnable() {
 					@Override
 					public void run() {
@@ -98,7 +98,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	}
 
 	public boolean addDevice(WSc wsc) {
-		SocketClient client = new SocketClient(context, SSLC, this);
+		SocketClient client = new SocketClient(mainActivity, SSLC, this);
 		try {
 			client.connect(wsc);
 		} catch (IOException e) {
@@ -108,11 +108,18 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 		clientList.put(wsc, client);
 		return true;
 	}
+	public void removeDevice(WSc wsc) {
+		clientList.get(wsc).disconnect();
+		clientList.remove(wsc);	
+		mainActivity.updateList();
+	}
+	
+	public void removeDevice(String address) {
+		removeDevice(getKey(address));
+	}
 	
 	public void removeDevice(int index) {
-		WSc device = getKey(index);
-		clientList.get(device).disconnect();
-		clientList.remove(device);		
+		removeDevice(getKey(index));
 	}
 	
 	/**
@@ -228,7 +235,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 			client.disconnect();
 		}
 		try {
-			FileUtils.saveToFile(context, new ArrayList<WSc>(clientList.keySet()));
+			FileUtils.saveToFile(mainActivity, new ArrayList<WSc>(clientList.keySet()));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

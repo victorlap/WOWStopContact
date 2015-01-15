@@ -1,7 +1,7 @@
 package nl.utwente.wsc;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 
 import nl.utwente.wsc.models.WSc;
 import android.app.AlertDialog;
@@ -16,19 +16,17 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
 import android.widget.Toast;
 
 
 public class MainActivity extends ListActivity {
 	
-	private static final String TAG = "WSc";
+	private static final String TAG = "MainActivity";
 	
-	public static final String EXTRA_INETADDRESS = "extra_inetaddress";
-	public static final String EXTRA_PORTNUMBER = "extra_portnumber";
 	public static final int DEFAULT_PORTNUMBER = 7331;
 	
 	private SocketClientManager manager;
+	List<WSc> list;
 	
 	private ArrayAdapter<WSc> adapter;
 	
@@ -37,9 +35,8 @@ public class MainActivity extends ListActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         startSocketManager();
-        ArrayList<WSc> list = new ArrayList<WSc>(manager.getDevices());
+        list = manager.getDevices();
         adapter = new ArrayAdapter<WSc>(this, android.R.layout.simple_list_item_1, list);
-
         setListAdapter(adapter);
     }
 		
@@ -92,6 +89,11 @@ public class MainActivity extends ListActivity {
     	manager.stop();
     }
     
+    public void updateList() {
+		list = manager.getDevices();
+		adapter.notifyDataSetChanged();   	
+    }
+    
     private void showAddWscDialog() {
     	AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setTitle("Add WSc");
@@ -132,7 +134,7 @@ public class MainActivity extends ListActivity {
 					
 					WSc wsc = new WSc(nameBox.getText().toString(), hostnameBox.getText().toString(), Integer.parseInt(portBox.getText().toString()));
 					manager.addDevice(wsc);
-					adapter.notifyDataSetChanged();
+					updateList();
 					dialog.dismiss();
 				} else {
 					Toast.makeText(getApplication(), "Please fill in correct values", Toast.LENGTH_SHORT).show();

@@ -3,18 +3,8 @@ package nl.utwente.wsc.communication;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -25,10 +15,8 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLHandshakeException;
-import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
-import javax.net.ssl.TrustManagerFactory;
 
 import nl.utwente.wsc.exceptions.InvalidPacketException;
 import nl.utwente.wsc.models.WSc;
@@ -155,7 +143,8 @@ public class SocketClient {
 	                }
 	                Packet packet = new Packet(header, receiverBuff);
 	                if (new String(packet.getData()).equalsIgnoreCase("DEAD")) {
-	                	callBack.doneTask(sock.getInetAddress(), ValueType.CONN_DEAD, null);
+	                	callBack.doneTask(sock.getInetAddress().getHostAddress(), 
+	                			ValueType.CONN_DEAD, null);
 	                }
 	                synchronized (lock) {
 	                    receiveBuffer.add(packet);
@@ -183,13 +172,13 @@ public class SocketClient {
         return packet;
     }
       
-    public void connect(InetAddress address, int portNr, int timeout) {
+    public void connect(String address, int portNr, int timeout) {
     	performAsyncAction(ValueType.CONNECTING, false, 
-    			new String[]{address.getHostAddress(), portNr+"", timeout+""});
+    			new String[]{address, portNr+"", timeout+""});
     }   
      
     public void connect(WSc wsc) throws UnknownHostException {
-    	connect(InetAddress.getByName(wsc.getHostname()), wsc.getPort(), TIMEOUT);
+    	connect(wsc.getHostname(), wsc.getPort(), TIMEOUT);
     }
     
     public synchronized boolean socketIsOn() throws IOException {
@@ -312,7 +301,7 @@ class AsyncCommunication extends AsyncTask<String, Integer, Object> {
 			        client.finishConnecting();
 				} catch (IOException e) {
 					e.printStackTrace();
-					client.callBack.doneTask(InetAddress.getByName(params[1]), type, false);
+					client.callBack.doneTask(params[1], type, false);
 					return null;
 				}
 				returnValue = true;
@@ -330,7 +319,8 @@ class AsyncCommunication extends AsyncTask<String, Integer, Object> {
 			return returnValue;
 		}
 		try {
-			client.callBack.doneTask(client.sock.getInetAddress(), type, returnValue);
+			client.callBack.doneTask(client.sock.getInetAddress().getHostAddress(), 
+					type, returnValue);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
