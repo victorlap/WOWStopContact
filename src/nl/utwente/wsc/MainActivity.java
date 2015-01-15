@@ -62,7 +62,14 @@ public class MainActivity extends ListActivity {
     @Override
     protected void onResume() {
     	super.onResume();
+    	startSocketManager();
         //BASE_IP = getBaseIP();
+    }
+    
+    @Override
+    protected void onPause() {
+    	stopSocketManager();
+    	super.onPause();
     }
 		
 	@Override

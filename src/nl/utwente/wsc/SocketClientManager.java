@@ -37,7 +37,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	public SocketClientManager(MainActivity c) throws IOException {
 		mainActivity = c;
 		getSSLContext(mainActivity.getAssets().open(CERTIFICATE));
-		if(FileUtils.hasWscList()) {
+		if(FileUtils.hasWscList(c)) {
 			try {
 				for(WSc wsc : FileUtils.getWSCListFromFile(mainActivity)) {
 					SocketClient sClient = new SocketClient(mainActivity, SSLC, this);
@@ -52,8 +52,6 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 				e.printStackTrace();
 			}
 		}
-	    addDevice(new WSc("Mark server", "130.89.232.73", 7331)); //TODO remove
-	    addDevice(new WSc("Rob server", "130.89.237.220", 7331)); //TODO remove
 	}
 
 	/**

@@ -1,6 +1,5 @@
 package nl.utwente.wsc.utils;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -8,15 +7,15 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
 
-import android.content.Context;
 import nl.utwente.wsc.models.WSc;
+import android.content.Context;
 
 public final class FileUtils {
 	
 	private final static String WSC_LIST_PATH = "wsc_array_list.tmp";
 
-	public static boolean hasWscList() {
-		return new File(WSC_LIST_PATH).exists();
+	public static boolean hasWscList(Context c) {
+		return c.getFileStreamPath(WSC_LIST_PATH).exists();
 	}
 
 	public static void saveToFile(Context c, List<WSc> list) throws IOException {
