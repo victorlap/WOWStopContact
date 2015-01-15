@@ -1,6 +1,8 @@
 package nl.utwente.wsc;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 
 import nl.utwente.wsc.models.WSc;
@@ -24,6 +26,7 @@ public class MainActivity extends ListActivity {
 	private static final String TAG = "MainActivity";
 	
 	public static final int DEFAULT_PORTNUMBER = 7331;
+	public static String BASE_IP;
 	
 	private SocketClientManager manager;
 	List<WSc> list;
@@ -34,11 +37,18 @@ public class MainActivity extends ListActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //BASE_IP = getBaseIP();        
         startSocketManager();
         list = manager.getDevices();
         adapter = new WscAdapter(this, list, manager);
 
         setListAdapter(adapter);
+    }
+    
+    @Override
+    protected void onResume() {
+    	super.onResume();
+        //BASE_IP = getBaseIP();
     }
 		
 	@Override
@@ -52,6 +62,17 @@ public class MainActivity extends ListActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
+    }
+    
+    private String getBaseIP() {
+    	String[] parts;
+		try {
+			parts = InetAddress.getLocalHost().toString().split("\\.");
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+			return "";
+		}
+    	return parts[0] + "." + parts[1] + ".";
     }
     
     @Override

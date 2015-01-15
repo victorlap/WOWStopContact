@@ -43,8 +43,8 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 			try {
 				for(WSc wsc : FileUtils.getWSCListFromFile(mainActivity)) {
 					SocketClient sClient = new SocketClient(mainActivity, SSLC, this);
+					clientList.put(wsc, sClient);
 					sClient.connect(wsc.getHostname(), wsc.getPort(), 10000);
-					clientList.put(wsc, new SocketClient(mainActivity, SSLC, this));
 				}
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
@@ -55,6 +55,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 			}
 		}
 	    addDevice(new WSc("Mark server", "130.89.232.73", 7331)); //TODO remove
+	    addDevice(new WSc("Rob server", "130.89.237.220", 7331)); //TODO remove
 	}
 
 	/**
@@ -72,19 +73,10 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 			if (value.equals(false)) {
 				//TODO connecting does not have to succeed to be able to add the device
 				mainActivity.toastMessage(mainActivity, "Adding device failed: " + address, true);
-				removeDevice(address);
 			} else {
 				mainActivity.toastMessage(mainActivity, "Adding device succes: " + address, true);
-				Thread set = new Thread(new Runnable() {
-					@Override
-					public void run() {
-						try {
-							Thread.sleep(500);
-						} catch (InterruptedException e) {}
-						setDevicesState(true);						
-					}
-				});
-				set.start();
+				getKey(address).setConnected(true);
+				mainActivity.updateList();
 			}
 		} else if (type.equals(ValueType.DISCONNECTING)) {
 		} else if (type.equals(ValueType.CONN_DEAD)) {

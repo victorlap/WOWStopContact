@@ -57,9 +57,7 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 			
 			updateWscColor(wsc, powerImage);
 			
-			if(!wsc.isConnected()) {
-				toggleButton.setEnabled(false);
-			}
+			toggleButton.setEnabled(wsc.isConnected());
 			
 		}
 		
