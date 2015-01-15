@@ -9,12 +9,15 @@
     tools:context="nl.utwente.wsc.MainActivity" >
 
     <TextView
+        android:id="@+id/hellow"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
         android:text="@string/hello_world" />
 
     <ListView
         android:id="@android:id/list"
+        android:layout_below="@id/hellow"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" >
     </ListView>

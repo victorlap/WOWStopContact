@@ -37,7 +37,7 @@ public class MainActivity extends ListActivity {
         setContentView(R.layout.activity_main);
         startSocketManager();
         ArrayList<WSc> list = new ArrayList<WSc>(manager.getDevices());
-        adapter = new WscAdapter(this, list);
+        adapter = new WscAdapter(this, list, manager);
 
         setListAdapter(adapter);
     }

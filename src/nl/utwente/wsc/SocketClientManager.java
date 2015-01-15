@@ -18,10 +18,10 @@ import java.util.List;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
-import nl.utwente.wsc.communication.ColorType;
 import nl.utwente.wsc.communication.OnSocManagerTaskCompleted;
 import nl.utwente.wsc.communication.SocketClient;
 import nl.utwente.wsc.communication.ValueType;
+import nl.utwente.wsc.models.ColorType;
 import nl.utwente.wsc.models.WSc;
 import nl.utwente.wsc.utils.FileUtils;
 import android.database.Observable;
@@ -171,6 +171,20 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 				clientList.get(getKey(index)).turnOnSocket();
 			} else {
 				clientList.get(getKey(index)).turnOffSocket();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+	
+	public boolean setDeviceState(WSc wsc, boolean turnOn ) {
+		try {
+			if (turnOn) {
+				clientList.get(wsc).turnOnSocket();
+			} else {
+				clientList.get(wsc).turnOffSocket();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
