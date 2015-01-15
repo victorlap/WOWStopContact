@@ -92,7 +92,11 @@ public class MainActivity extends ListActivity {
     
     public void updateList() {
 		list = manager.getDevices();
-		adapter.notifyDataSetChanged();   	
+		runOnUiThread(new Runnable() {
+    	    public void run() {
+    	        adapter.notifyDataSetChanged();
+    	    }
+    	});
     }
     
     private void showAddWscDialog() {
