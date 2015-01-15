@@ -182,11 +182,13 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	}
 	
 	public boolean setDeviceState(WSc wsc, boolean turnOn ) {
-		wsc.setBusy(true);
+		
 		try {
-			if (turnOn) {
+			if (turnOn && !wsc.isTurnedOn()) {
+				wsc.setBusy(true);
 				clientList.get(wsc).turnOnSocket();
-			} else {
+			} else if(!turnOn && wsc.isTurnedOn()) {
+				wsc.setBusy(true);
 				clientList.get(wsc).turnOffSocket();
 			}
 		} catch (IOException e) {
