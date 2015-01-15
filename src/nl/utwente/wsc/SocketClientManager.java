@@ -91,13 +91,13 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 
 	public boolean addDevice(WSc wsc) {
 		SocketClient client = new SocketClient(mainActivity, SSLC, this);
+		clientList.put(wsc, client);
 		try {
 			client.connect(wsc);
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
 		}
-		clientList.put(wsc, client);
 		return true;
 	}
 	public void removeDevice(WSc wsc) {
