@@ -32,7 +32,7 @@ public class MainActivity extends ListActivity {
 	private SocketClientManager manager;
 	List<WSc> list;
 	
-	final private ToggleButton toggle_devices = (ToggleButton) findViewById(R.id.allDevicesToggle);
+	private ToggleButton toggle_devices;
 	
 	private WscAdapter adapter;
 	
@@ -47,6 +47,7 @@ public class MainActivity extends ListActivity {
 
         setListAdapter(adapter);
         
+        toggle_devices = (ToggleButton) findViewById(R.id.allDevicesToggle);
         toggle_devices.setOnClickListener(new View.OnClickListener() {
 			
 			@Override
