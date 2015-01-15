@@ -11,11 +11,16 @@ public class WSc implements Serializable {
 	private String name;
 	private String hostname;
 	private int port;
+	private boolean turned_on;
 	
 	public WSc(String name, String hostname, int port) {
 		this.name = name;
 		this.hostname = hostname;
 		this.port = port;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
 	}
 	
 	public String getName() {
@@ -28,6 +33,14 @@ public class WSc implements Serializable {
 	
 	public int getPort() {
 		return port;
+	}
+	
+	public void setTurnedOn(boolean turned_on) {
+		this.turned_on = turned_on;
+	}
+	
+	public boolean isTurnedOn() {
+		return turned_on;
 	}
 	
 	@Override

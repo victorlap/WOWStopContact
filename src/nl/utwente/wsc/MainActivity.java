@@ -16,7 +16,6 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
 import android.widget.Toast;
 
 
@@ -38,7 +37,7 @@ public class MainActivity extends ListActivity {
         setContentView(R.layout.activity_main);
         startSocketManager();
         ArrayList<WSc> list = new ArrayList<WSc>(manager.getDevices());
-        adapter = new ArrayAdapter<WSc>(this, android.R.layout.simple_list_item_1, list);
+        adapter = new WscAdapter(this, list);
 
         setListAdapter(adapter);
     }
