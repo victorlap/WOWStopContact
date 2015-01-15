@@ -19,6 +19,7 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 
 import nl.utwente.wsc.exceptions.InvalidPacketException;
+import nl.utwente.wsc.models.ColorType;
 import nl.utwente.wsc.models.WSc;
 import nl.utwente.wsc.utils.Timer;
 import nl.utwente.wsc.utils.Tools;

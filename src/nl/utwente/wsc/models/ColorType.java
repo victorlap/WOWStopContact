@@ -1,4 +1,4 @@
-package nl.utwente.wsc.communication;
+package nl.utwente.wsc.models;
 
 /**
  * The type of color a WSc currently emits.
