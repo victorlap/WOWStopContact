@@ -100,8 +100,9 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	}
 	
 	private void toastDeviceUpdate(WSc wsc, String action, boolean active, boolean succes) {
-		mainActivity.toastMessage(mainActivity, (active ? action + " device" : "Device " + action) 
-				+ " " + (active && succes ? " succes" : " failed"), false);
+		mainActivity.toastMessage(mainActivity, (active ? action + " device \"" + wsc.getName() + "\"" : 
+			"Device \"" + wsc.getName() + "\"" + action) 
+				 + (active && succes ? "succes" : " failed"), false);
 	}
 	
 	public List<WSc> getDevices() {

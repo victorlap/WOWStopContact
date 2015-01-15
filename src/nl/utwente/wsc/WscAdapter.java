@@ -90,4 +90,9 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 
 	}
 
+	public void updateList(List<WSc> devices) {
+		objects = devices;
+		notifyDataSetChanged();
+	}
+
 }

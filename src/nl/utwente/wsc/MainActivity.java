@@ -126,7 +126,7 @@ public class MainActivity extends ListActivity {
 		list = manager.getDevices();
 		runOnUiThread(new Runnable() {
     	    public void run() {
-    	        adapter.notifyDataSetChanged();
+    	    	adapter.updateList(manager.getDevices());
     	    }
     	});
     }
