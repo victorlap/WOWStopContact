@@ -2,7 +2,6 @@ package nl.utwente.wsc;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -21,7 +20,6 @@ import javax.net.ssl.TrustManagerFactory;
 import nl.utwente.wsc.communication.OnSocManagerTaskCompleted;
 import nl.utwente.wsc.communication.SocketClient;
 import nl.utwente.wsc.communication.ValueType;
-import nl.utwente.wsc.models.ColorType;
 import nl.utwente.wsc.models.WSc;
 import nl.utwente.wsc.utils.FileUtils;
 import android.database.Observable;
@@ -64,25 +62,46 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	 */
 	@Override
 	public void doneTask(String address, ValueType type, Object value) {
+		WSc wsc = getKey(address);
+		boolean active = true, succes = value.equals(true);
+		String action;
 		if (type.equals(ValueType.IS_ON)) {		
 		} else if (type.equals(ValueType.TURN_OFF)) {
+			if (succes) {
+				succes = true;
+			}
+			
 		} else if (type.equals(ValueType.TURN_ON)) {
 		} else if (type.equals(ValueType.VALUES_POWER)) {
 		} else if (type.equals(ValueType.VALUES_COLOR)) {
+			
 		} else if (type.equals(ValueType.CONNECTING)) {
-			if (value.equals(false)) {
-				//TODO connecting does not have to succeed to be able to add the device
-				mainActivity.toastMessage(mainActivity, "Adding device failed: " + address, true);
-			} else {
-				mainActivity.toastMessage(mainActivity, "Adding device succes: " + address, true);
-				getKey(address).setConnected(true);
-				mainActivity.updateList();
+			if (succes) {
+				wsc.setConnected(true);
+			} else { 
+				// problem
 			}
 		} else if (type.equals(ValueType.DISCONNECTING)) {
+			if (succes) {
+				wsc.setConnected(true);
+			} else { 
+				// problem
+			}			
 		} else if (type.equals(ValueType.CONN_DEAD)) {
-			
+			clientList.remove(wsc);
+			mainActivity.updateList();
+			active = false;
+		} else {
+			return;
 		}
-		
+		toastDeviceUpdate(wsc, type.toFriendlyString(), active, succes);
+		wsc.setBusy(false);
+		mainActivity.updateList();
+	}
+	
+	private void toastDeviceUpdate(WSc wsc, String action, boolean active, boolean succes) {
+		mainActivity.toastMessage(mainActivity, (active ? action + " device" : "Device " + action) 
+				+ " " + (active && succes ? " succes" : " failed"), false);
 	}
 	
 	public List<WSc> getDevices() {
@@ -183,19 +202,34 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	 * 
 	 * @return the array of color types
 	 */
-	public ColorType[] getDevicesColor() {
-		ColorType[] colors = new ColorType[clientList.size()];
-//		boolean succes = true;
-//		int counter = 0;
-//		for (SocketClient client : clientList.values()) {	
-//			try {
-//				colors[counter] = client.getSocketColor();
-//			} catch (IOException e) {
-//				e.printStackTrace();
-//			}
-//			counter++;
-//		}
-		return colors;
+	public boolean getDevicesColor() {	
+		boolean succes = true;
+		for (SocketClient client : clientList.values()) {	
+			try {
+				client.getSocketColor();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return succes;
+	}
+	
+	/**
+	 * Gets the current color of every connected WSc.<br>
+	 * Array can contain nulls when the device(s) do(es) not respond.
+	 * 
+	 * @return the array of color types
+	 */
+	public boolean getDevicesValues() {		
+		boolean succes = true;
+		for (SocketClient client : clientList.values()) {	
+			try {
+				client.getPowerValues();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return succes;
 	}
 	
 	private WSc getKey(int index) {

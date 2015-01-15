@@ -96,6 +96,7 @@ public class MainActivity extends ListActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
+    	manager.getDevicesValues();
     	switch(item.getItemId()) {
 	    	case R.id.action_add_wsc:
 	    		showAddWscDialog();

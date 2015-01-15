@@ -110,8 +110,9 @@ public class SocketClient {
 	                    try {
 	                        headerbuff[0] = (byte) in.read();
 	                    } catch (IOException ex) {
-	                        Log.e(this.toString(), "Connection dead");
+	                    	Log.e(this.toString(), "Connection dead");
 	                        stop = true;
+	                        disconnect();
 	                        continue;
 	                    }
 	                    Tools.waitForMs(50);
