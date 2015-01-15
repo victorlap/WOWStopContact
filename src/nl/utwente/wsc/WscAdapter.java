@@ -1,5 +1,6 @@
 package nl.utwente.wsc;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import nl.utwente.wsc.models.WSc;
@@ -10,6 +11,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
@@ -17,6 +19,7 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 	
 	private List<WSc> objects;
 	private SocketClientManager manager;
+	private ArrayList<ProgressBar> pbs = new ArrayList<ProgressBar>();
 
 	public WscAdapter(Context context, List<WSc> objects, SocketClientManager manager) {
 		super(context, R.layout.listitem_wsc, objects);
@@ -36,6 +39,7 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 		
 		final TextView name = (TextView) convertView.findViewById(R.id.wsc_name);
 		final ImageView powerImage = (ImageView) convertView.findViewById(R.id.powerImage);
+		final ProgressBar progressBar = (ProgressBar) convertView.findViewById(R.id.progressBar);
 		final ToggleButton toggleButton = (ToggleButton) convertView.findViewById(R.id.toggleButton);
 		
 		final WSc wsc = objects.get(position);
@@ -59,6 +63,8 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 			
 			toggleButton.setEnabled(wsc.isConnected());
 			
+			pbs.add(progressBar);
+			
 		}
 		
 		return convertView;
@@ -80,6 +86,16 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 				powerImage.setImageResource(R.drawable.ic_color_none);
 				break;
 		}
+	}
+	
+	public void turnOnAllSpinners() {
+		for(ProgressBar pb : pbs) {
+			pb.setVisibility(View.VISIBLE);
+		}
+	}
+	
+	public void turnOffSpinner(int position) {
+		pbs.get(position).setVisibility(View.GONE);
 	}
 
 }

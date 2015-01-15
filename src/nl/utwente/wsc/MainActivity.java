@@ -14,11 +14,13 @@ import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 
 public class MainActivity extends ListActivity {
@@ -31,7 +33,7 @@ public class MainActivity extends ListActivity {
 	private SocketClientManager manager;
 	List<WSc> list;
 	
-	private ArrayAdapter<WSc> adapter;
+	private WscAdapter adapter;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +45,16 @@ public class MainActivity extends ListActivity {
         adapter = new WscAdapter(this, list, manager);
 
         setListAdapter(adapter);
+        
+        final ToggleButton toggle_devices = (ToggleButton) findViewById(R.id.allDevicesToggle);
+        toggle_devices.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				manager.setDevicesState(toggle_devices.isChecked());
+				adapter.turnOnAllSpinners();
+			}
+		});
     }
     
     @Override
@@ -185,5 +197,9 @@ public class MainActivity extends ListActivity {
     	        Toast.makeText(context, message, displayLong ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT).show();
     	    }
     	});
+    }
+    
+    public void turnOffSpinner(int position) { 
+    	adapter.turnOffSpinner(position);
     }
 }
