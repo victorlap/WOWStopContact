@@ -56,9 +56,8 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 				
 				@Override
 				public void onClick(View v) {
-					wsc.setBusy(true);
-					wsc.setTurnedOn(toggleButton.isChecked());
 					manager.setDeviceState(wsc, toggleButton.isChecked());
+					wsc.setTurnedOn(toggleButton.isChecked());
 					mainActivity.updateList();
 				}
 			});

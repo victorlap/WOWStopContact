@@ -84,5 +84,20 @@ public class WSc implements Serializable {
 	public String toString() {
 		return getName() + " " + getHostname() + ":" + getPort();
 	}
+	
+	@Override
+	public boolean equals(Object other) {
+		if(other == this) {
+			return true;
+		}
+		if(other instanceof WSc) {
+			WSc w = (WSc) other;
+			if(getName() != w.getName()) return false; 
+			if(getHostname() != w.getHostname()) return false;
+			if(getPort() != w.getPort()) return false;
+			return true;
+		}
+		return false;
+	}
 
 }

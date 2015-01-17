@@ -193,11 +193,11 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 		
 		try {
 			if (turnOn && !wsc.isTurnedOn()) {
+				clientList.get(getKey(wsc.getHostname())).turnOnSocket();
 				wsc.setBusy(true);
-				clientList.get(wsc).turnOnSocket();
 			} else if(!turnOn && wsc.isTurnedOn()) {
+				clientList.get(getKey(wsc.getHostname())).turnOffSocket();
 				wsc.setBusy(true);
-				clientList.get(wsc).turnOffSocket();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
