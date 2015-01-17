@@ -36,6 +36,8 @@ public class MainActivity extends ListActivity {
 	
 	private WscAdapter adapter;
 	
+	private boolean wasPaused;
+	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,14 +64,17 @@ public class MainActivity extends ListActivity {
     @Override
     protected void onResume() {
     	super.onResume();
-    	startSocketManager();
+    	if (wasPaused) {
+    		startSocketManager();
+    	}
         //BASE_IP = getBaseIP();
     }
     
     @Override
     protected void onPause() {
-    	stopSocketManager();
     	super.onPause();
+    	wasPaused = true;
+    	stopSocketManager();
     }
 		
 	@Override

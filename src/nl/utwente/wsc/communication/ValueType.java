@@ -6,7 +6,7 @@ import android.content.Context;
 
 public enum ValueType {
 
-	IS_ON, TURN_OFF, TURN_ON, VALUES_POWER, VALUES_COLOR, CONNECTING, DISCONNECTING, CONN_DEAD;
+	IS_ON, TURN_OFF, TURN_ON, VALUES_POWER, VALUES_COLOR, CONNECTING, DISCONNECTING, CONN_DEAD, GET_IP;
 
 	/**
 	 * Gets the value type belonging to this string.

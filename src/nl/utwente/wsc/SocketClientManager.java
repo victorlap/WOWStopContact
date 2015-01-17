@@ -41,8 +41,11 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 			try {
 				for(WSc wsc : FileUtils.getWSCListFromFile(mainActivity)) {
 					SocketClient sClient = new SocketClient(mainActivity, SSLC, this);
-					clientList.put(wsc, sClient);
-					sClient.connect(wsc.getHostname(), wsc.getPort());
+					if (clientList.get(wsc) == null) {
+						clientList.put(wsc, sClient);
+						wsc.setBusy(true);
+						sClient.connect(wsc.getHostname(), wsc.getPort());
+					}
 				}
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
@@ -62,14 +65,20 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	public void doneTask(String address, ValueType type, Object value) {
 		WSc wsc = getKey(address);
 		boolean active = true, succes = value.equals(true);
-		String action;
-		if (type.equals(ValueType.IS_ON)) {		
+		if (type.equals(ValueType.IS_ON)) {	
+			wsc.setTurnedOn(succes);
 		} else if (type.equals(ValueType.TURN_OFF)) {
 			if (succes) {
-				succes = true;
-			}
-			
+				wsc.setTurnedOn(false);
+			} else {
+				// Could not turn it off
+			}			
 		} else if (type.equals(ValueType.TURN_ON)) {
+			if (succes) {
+				wsc.setTurnedOn(true);
+			} else {
+				// Could not turn it on
+			}
 		} else if (type.equals(ValueType.VALUES_POWER)) {
 		} else if (type.equals(ValueType.VALUES_COLOR)) {
 			
@@ -81,7 +90,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 			}
 		} else if (type.equals(ValueType.DISCONNECTING)) {
 			if (succes) {
-				wsc.setConnected(true);
+				wsc.setConnected(false);
 			} else { 
 				// problem
 			}			

@@ -11,8 +11,9 @@ public class WSc implements Serializable {
 	private String name;
 	private String hostname;
 	private int port;
-	private boolean turnedOn;
+	
 	private transient boolean connected;
+	private transient boolean turnedOn;
 	private transient ColorType color;
 	private transient boolean busy;
 	

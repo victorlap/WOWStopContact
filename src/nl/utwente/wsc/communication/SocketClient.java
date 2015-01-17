@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 
 import nl.utwente.wsc.exceptions.InvalidPacketException;
 import nl.utwente.wsc.models.ColorType;
@@ -290,8 +292,9 @@ class AsyncCommunication extends AsyncTask<String, Integer, Object> {
 			} else if (type.equals(ValueType.CONNECTING)) {
 				try {
 					// Open SSLSocket to wall socket
-			        SocketFactory ssf = client.sslContext.getSocketFactory();
-			        client.sock = (SSLSocket)ssf.createSocket(params[1], Integer.parseInt(params[2]));
+			        SSLSocketFactory ssf = client.sslContext.getSocketFactory();
+			        client.sock = (SSLSocket)ssf.createSocket();
+			        client.sock.connect(new InetSocketAddress(params[1], Integer.parseInt(params[2])),Integer.parseInt(params[3]));
 			        HostnameVerifier hv = HttpsURLConnection.getDefaultHostnameVerifier();
 			        SSLSession session = client.sock.getSession();
 			        // Verify that the certificate host name is for the wall socket
