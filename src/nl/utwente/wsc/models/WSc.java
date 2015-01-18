@@ -1,6 +1,14 @@
 package nl.utwente.wsc.models;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.zip.DataFormatException;
+
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
+import com.jjoe64.graphview.series.DataPoint;
 
 
 public class WSc implements Serializable {
@@ -15,6 +23,7 @@ public class WSc implements Serializable {
 	private transient boolean turnedOn;
 	private transient ColorType color;
 	private transient boolean busy;
+	private DataPoint[] history;
 	
 	public WSc(String name, String hostname, int port) {
 		this.name = name;
@@ -69,6 +78,35 @@ public class WSc implements Serializable {
 	
 	public ColorType getColor() {
 		return color == null ? ColorType.NONE : color;
+	}
+	
+	/**
+	 * Set a history in the form of a <code>String[]</code>
+	 * the string array should contain strings in the form of 01:10 06-01-2015,230
+	 * @param history
+	 */
+	public void setHistory(String[] history) {
+		DataPoint[] dps = new DataPoint[history.length];
+		int i = -1;
+		for(String unit : history) {
+			String[] units = unit.split(",");
+			DateTimeFormatter f = DateTimeFormat.forPattern("HH:mm dd-MM-yyyy");
+			dps[i++] = new DataPoint(f.parseDateTime(units[0]).toDate(), Double.parseDouble(units[1]));
+		}
+		setHistory(dps);
+	}
+	
+	/**
+	 * Set a history in the form of a <code>DataPoint[]</code>
+	 * the DataPointArray should be in the form of ({@link Date}, {@link String})
+	 * @param history
+	 */
+	public void setHistory(DataPoint[] history) {
+		this.history = history;
+	}
+	
+	public DataPoint[] getHistory() {
+		return history;
 	}
 	
 	@Override

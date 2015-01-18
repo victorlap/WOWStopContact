@@ -2,6 +2,7 @@ package nl.utwente.wsc;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -96,6 +97,14 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 				// Could not turn it on
 			}
 		} else if (type.equals(ValueType.VALUES_POWER)) {
+			if(!value.equals("-1")) {		
+				// Asume object is large string with format:
+				// 01:10 06-01-2015,230;02:10 06-01-2015,290;03:10 06-01-2015,200;”
+				String[] values = ((String) value).split(";");
+				wsc.setHistory(values);
+			} else {
+				// Problem
+			}
 		} else if (type.equals(ValueType.VALUES_COLOR)) {
 
 		} else if (type.equals(ValueType.CONNECTING)) {
@@ -153,6 +162,11 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 		clientList.get(wsc).disconnect();
 		clientList.remove(wsc);	
 		callback.updateList();
+	}
+	
+	public SocketClient getConnectedClient(WSc wsc) throws UnknownHostException {
+		clientList.get(wsc).connect(wsc);
+		return clientList.get(wsc);
 	}
 
 	public void removeDevice(String address) {
