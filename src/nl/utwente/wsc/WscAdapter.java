@@ -29,6 +29,7 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 		this.mainActivity = mainActivity;
 	}
 
+	
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 
@@ -36,7 +37,7 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 		// to inflate it basically means to render, or show, the view.
 		if (convertView == null) {
 			LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			convertView = inflater.inflate(R.layout.listitem_wsc, null);
+			convertView = inflater.inflate(R.layout.listitem_wsc, null, false);
 		}
 		
 		final WSc wsc = objects.get(position);
