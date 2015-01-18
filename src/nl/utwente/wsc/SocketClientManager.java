@@ -115,6 +115,12 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	public List<WSc> getDevices() {
 		return new ArrayList<WSc>(clientList.keySet());
 	}
+	
+	public boolean updateDevice(WSc wsc) {
+		wsc.setBusy(true);
+		removeDevice(wsc);
+		return addDevice(wsc);
+	}
 
 	public boolean addDevice(WSc wsc) {
 		wsc.setBusy(true);
@@ -150,7 +156,6 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	 */
 	public Boolean[] getDevicesState() {
 		Boolean[] states = new Boolean[clientList.size()];
-		boolean succes = true;
 		int counter = 0;
 		for (SocketClient client : clientList.values()) {	
 			try {

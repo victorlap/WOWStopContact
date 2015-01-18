@@ -30,7 +30,8 @@ public class MainActivity extends ListActivity {
 	
 	private static final String TAG = "MainActivity";
 	
-	public static final int DEFAULT_PORTNUMBER = 7331;
+	public static final int    DEFAULT_PORTNUMBER = 7331;
+	public static final String EXTRA_WSC = "extra_wsc";
 	public static String BASE_IP;
 	
 	private SocketClientManager manager;
@@ -189,7 +190,7 @@ public class MainActivity extends ListActivity {
 				} catch (NumberFormatException e) {
 					port = DEFAULT_PORTNUMBER;
 				}
-				if(name != null && host != null) {
+				if(name != null && !name.equals("") && host != null && !host.equals("")) {
 					
 					WSc wsc = new WSc(nameBox.getText().toString(), hostnameBox.getText().toString(), Integer.parseInt(portBox.getText().toString()));
 					manager.addDevice(wsc);

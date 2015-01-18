@@ -5,6 +5,8 @@ import java.util.List;
 
 import nl.utwente.wsc.models.WSc;
 import android.content.Context;
+import android.content.Intent;
+import android.sax.StartElementListener;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -45,6 +47,16 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 			
 			final TextView name = (TextView) convertView.findViewById(R.id.wsc_name);
 			name.setText(wsc.toString());
+			name.setOnClickListener(new OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					Intent i = new Intent(mainActivity, WscActivity.class);
+					i.putExtra(MainActivity.EXTRA_WSC, wsc);
+					mainActivity.startActivity(i);
+					mainActivity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+				}
+			});
 			
 			final ToggleButton toggleButton = (ToggleButton) convertView.findViewById(R.id.toggleButton);
 			toggleButton.setChecked(wsc.isTurnedOn());
