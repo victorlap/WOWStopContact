@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 
+import nl.utwente.wsc.SocketClientManager.SCMCallback;
 import nl.utwente.wsc.models.WSc;
 import android.app.AlertDialog;
 import android.app.ListActivity;
@@ -21,12 +22,17 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
 
-public class MainActivity extends ListActivity {
+
+public class MainActivity extends ListActivity implements SCMCallback {
 	
 	private static final String TAG = "MainActivity";
 	
-	public static final int DEFAULT_PORTNUMBER = 7331;
+	public static final int    DEFAULT_PORTNUMBER = 7331;
+	public static final String EXTRA_WSC = "extra_wsc";
 	public static String BASE_IP;
 	
 	private SocketClientManager manager;
@@ -59,6 +65,8 @@ public class MainActivity extends ListActivity {
 				manager.setDevicesState(false);
 			}
 		});
+        
+        buildGraph();
     }
     
     @Override
@@ -124,7 +132,8 @@ public class MainActivity extends ListActivity {
 
     private void startSocketManager() {
     	try {
-			manager = new SocketClientManager(this);
+			manager = new SocketClientManager(this, this);
+			manager.connect();
 		} catch (IOException e) {
 			e.printStackTrace();
 			try {
@@ -183,9 +192,9 @@ public class MainActivity extends ListActivity {
 				} catch (NumberFormatException e) {
 					port = DEFAULT_PORTNUMBER;
 				}
-				if(name != null && host != null) {
+				if(name != null && !name.equals("") && host != null && !host.equals("")) {
 					
-					WSc wsc = new WSc(nameBox.getText().toString(), hostnameBox.getText().toString(), Integer.parseInt(portBox.getText().toString()));
+					WSc wsc = new WSc(nameBox.getText().toString(), hostnameBox.getText().toString(), port);
 					manager.addDevice(wsc);
 					updateList();
 					dialog.dismiss();
@@ -216,5 +225,18 @@ public class MainActivity extends ListActivity {
     
     public void setToggleDevices(boolean enabled) {
     	toggle_devices.setEnabled(enabled);
+    }
+    
+    public void buildGraph() {
+    	GraphView graph = (GraphView) findViewById(R.id.graph);
+    	LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(new DataPoint[] {
+    	          new DataPoint(0, 1),
+    	          new DataPoint(1, 5),
+    	          new DataPoint(2, 3),
+    	          new DataPoint(3, 2),
+    	          new DataPoint(4, 6)
+    	});
+    	series.setDrawBackground(true);
+    	graph.addSeries(series);
     }
 }

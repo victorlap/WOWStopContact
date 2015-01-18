@@ -8,23 +8,35 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="nl.utwente.wsc.MainActivity" >
 
+    <com.jjoe64.graphview.GraphView
+        android:id="@+id/graph"
+        android:layout_width="match_parent"
+        android:layout_height="200dip"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:background="@android:color/white" />
+
     <LinearLayout
         android:id="@+id/header"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content"
+        android:layout_below="@id/graph"
+        android:background="@color/green"
+        android:paddingLeft="@dimen/activity_horizontal_margin" >
 
         <TextView
             android:id="@+id/wsc_name"
-            android:text="@string/my_devices"
             android:layout_width="0dp"
-            android:textAppearance="?android:attr/textAppearanceLarge"
             android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:text="@string/my_devices"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="@android:color/white" />
 
         <ToggleButton
             android:id="@+id/allDevicesToggle"
             android:layout_width="wrap_content"
-            android:layout_height="48dp" />
+            android:layout_height="48dp"
+            android:enabled="false" />
     </LinearLayout>
 
     <ListView
@@ -33,6 +45,5 @@
         android:layout_height="fill_parent"
         android:layout_below="@id/header" >
     </ListView>
-
 
 </RelativeLayout>

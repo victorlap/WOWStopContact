@@ -1,7 +1,6 @@
 package nl.utwente.wsc.models;
 
 import java.io.Serializable;
-import java.util.Random;
 
 
 public class WSc implements Serializable {
@@ -40,13 +39,8 @@ public class WSc implements Serializable {
 		return port;
 	}
 	
-	public void setTurnedOn(boolean turned_on) {
-		this.turnedOn = turned_on;
-		if(turned_on) {
-			setColor(ColorType.GREEN);
-		} else {
-			setColor(ColorType.NONE);
-		}
+	public void setTurnedOn(boolean turnedOn) {
+		this.turnedOn = turnedOn;
 	}
 	
 	public boolean isTurnedOn() {
@@ -74,10 +68,7 @@ public class WSc implements Serializable {
 	}
 	
 	public ColorType getColor() {
-		if (color == null) {
-			color = ColorType.NONE;
-		}
-		return color;
+		return color == null ? ColorType.NONE : color;
 	}
 	
 	@Override

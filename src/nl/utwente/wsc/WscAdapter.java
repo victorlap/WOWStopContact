@@ -1,10 +1,10 @@
 package nl.utwente.wsc;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import nl.utwente.wsc.models.WSc;
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -19,7 +19,6 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 	
 	private List<WSc> objects;
 	private SocketClientManager manager;
-	private ArrayList<ProgressBar> pbs = new ArrayList<ProgressBar>();
 	private MainActivity mainActivity;
 
 	public WscAdapter(Context context, List<WSc> objects, SocketClientManager manager, MainActivity mainActivity) {
@@ -44,12 +43,18 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 		
 		if(wsc != null) {
 			
-			if(wsc.isTurnedOn()) {
-				mainActivity.setToggleDevices(true);
-			}
-			
 			final TextView name = (TextView) convertView.findViewById(R.id.wsc_name);
 			name.setText(wsc.toString());
+			name.setOnClickListener(new OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					Intent i = new Intent(mainActivity, WscActivity.class);
+					i.putExtra(MainActivity.EXTRA_WSC, wsc);
+					mainActivity.startActivity(i);
+					mainActivity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+				}
+			});
 			
 			final ToggleButton toggleButton = (ToggleButton) convertView.findViewById(R.id.toggleButton);
 			toggleButton.setChecked(wsc.isTurnedOn());
@@ -96,6 +101,13 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 	}
 
 	public void updateList(List<WSc> devices) {
+		boolean oneDeviceOn = false;
+		for(WSc wsc : devices) {
+			if(wsc.isConnected() && wsc.isTurnedOn()) {
+				oneDeviceOn = true;
+			}
+		}
+		mainActivity.setToggleDevices(oneDeviceOn);
 		clear();
 		addAll(devices);
 		notifyDataSetChanged();
