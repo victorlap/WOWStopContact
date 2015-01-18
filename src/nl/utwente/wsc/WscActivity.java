@@ -1,13 +1,11 @@
 package nl.utwente.wsc;
 
 import java.io.IOException;
-import java.util.List;
+import java.net.UnknownHostException;
 
 import nl.utwente.wsc.SocketClientManager.SCMCallback;
+import nl.utwente.wsc.communication.SocketClient;
 import nl.utwente.wsc.models.WSc;
-import nl.utwente.wsc.utils.FileUtils;
-import nl.utwente.wsc.utils.Timer;
-import nl.utwente.wsc.utils.Tools;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -31,6 +29,7 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 public class WscActivity extends Activity implements SCMCallback {
 
 	private WSc wsc;
+	private SocketClient client;
 	private SocketClientManager manager;
 
 	@Override
@@ -44,7 +43,7 @@ public class WscActivity extends Activity implements SCMCallback {
 		wsc = (WSc) i.getSerializableExtra(MainActivity.EXTRA_WSC);
 
 		setTitle(wsc.getName());
-
+		
 		buildGraph();
 
 		startSocketManager();
@@ -115,6 +114,19 @@ public class WscActivity extends Activity implements SCMCallback {
 				e.printStackTrace();
 			}
 		}
+		if(client == null) {
+			try {
+				client = manager.getConnectedClient(wsc);
+			} catch (UnknownHostException e) {
+				toastMessage(this, "Could not connect", false);
+			}
+		}
+	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		startSocketManager();
 	}
 	
     @Override 
@@ -123,6 +135,13 @@ public class WscActivity extends Activity implements SCMCallback {
     	super.onPause();
     }
     
+    @Override
+    protected void onStop() {
+    	manager.save();
+    	super.onStop();
+    }
+    
+    @Override
     protected void onDestroy() {
     	manager.save();
     	super.onDestroy();
@@ -180,14 +199,17 @@ public class WscActivity extends Activity implements SCMCallback {
 	}
 
 	public void buildGraph() {
+		
+		try {
+			client.getPowerValues();
+			client.waitForPacket(3);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		GraphView graph = (GraphView) findViewById(R.id.graph);
-		LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(new DataPoint[] {
-				new DataPoint(0, 6),
-				new DataPoint(1, 2),
-				new DataPoint(2, 3),
-				new DataPoint(3, 5),
-				new DataPoint(4, 1)
-		});
+		LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(wsc.getHistory());
 		series.setDrawBackground(true);
 		graph.addSeries(series);
 	}
@@ -198,10 +220,13 @@ public class WscActivity extends Activity implements SCMCallback {
 	}
 
 	@Override
-	public void toastMessage(Context context, String message,
-			boolean displayLong) {
-		// TODO Auto-generated method stub
-
+	public void toastMessage(final Context context, final String message,
+			final boolean displayLong) {
+		runOnUiThread(new Runnable() {
+    	    public void run() {
+    	        Toast.makeText(context, message, displayLong ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT).show();
+    	    }
+    	});
 	}
 
 }
