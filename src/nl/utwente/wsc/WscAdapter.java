@@ -43,10 +43,6 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 		
 		if(wsc != null) {
 			
-			if(wsc.isTurnedOn()) {
-				mainActivity.setToggleDevices(true);
-			}
-			
 			final TextView name = (TextView) convertView.findViewById(R.id.wsc_name);
 			name.setText(wsc.toString());
 			
@@ -95,6 +91,13 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 	}
 
 	public void updateList(List<WSc> devices) {
+		boolean oneDeviceOn = false;
+		for(WSc wsc : devices) {
+			if(wsc.isConnected() && wsc.isTurnedOn()) {
+				oneDeviceOn = true;
+			}
+		}
+		mainActivity.setToggleDevices(oneDeviceOn);
 		clear();
 		addAll(devices);
 		notifyDataSetChanged();

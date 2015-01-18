@@ -39,8 +39,8 @@ public class WSc implements Serializable {
 		return port;
 	}
 	
-	public void setTurnedOn(boolean turned_on) {
-		this.turnedOn = turned_on;
+	public void setTurnedOn(boolean turnedOn) {
+		this.turnedOn = turnedOn;
 	}
 	
 	public boolean isTurnedOn() {
