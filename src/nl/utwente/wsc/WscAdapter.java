@@ -1,12 +1,10 @@
 package nl.utwente.wsc;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import nl.utwente.wsc.models.WSc;
 import android.content.Context;
 import android.content.Intent;
-import android.sax.StartElementListener;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -21,7 +19,6 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 	
 	private List<WSc> objects;
 	private SocketClientManager manager;
-	private ArrayList<ProgressBar> pbs = new ArrayList<ProgressBar>();
 	private MainActivity mainActivity;
 
 	public WscAdapter(Context context, List<WSc> objects, SocketClientManager manager, MainActivity mainActivity) {

@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 
+import nl.utwente.wsc.SocketClientManager.SCMCallback;
 import nl.utwente.wsc.models.WSc;
 import android.app.AlertDialog;
 import android.app.ListActivity;
@@ -26,7 +27,7 @@ import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
 
-public class MainActivity extends ListActivity {
+public class MainActivity extends ListActivity implements SCMCallback {
 	
 	private static final String TAG = "MainActivity";
 	
@@ -131,7 +132,8 @@ public class MainActivity extends ListActivity {
 
     private void startSocketManager() {
     	try {
-			manager = new SocketClientManager(this);
+			manager = new SocketClientManager(this, this);
+			manager.connect();
 		} catch (IOException e) {
 			e.printStackTrace();
 			try {
@@ -192,7 +194,7 @@ public class MainActivity extends ListActivity {
 				}
 				if(name != null && !name.equals("") && host != null && !host.equals("")) {
 					
-					WSc wsc = new WSc(nameBox.getText().toString(), hostnameBox.getText().toString(), Integer.parseInt(portBox.getText().toString()));
+					WSc wsc = new WSc(nameBox.getText().toString(), hostnameBox.getText().toString(), port);
 					manager.addDevice(wsc);
 					updateList();
 					dialog.dismiss();

@@ -3,7 +3,6 @@ package nl.utwente.wsc.communication;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -11,7 +10,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import javax.net.SocketFactory;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -320,7 +318,7 @@ class AsyncCommunication extends AsyncTask<String, Integer, Object> {
 		        returnValue = true;
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 			return returnValue;
 		}
 		try {
