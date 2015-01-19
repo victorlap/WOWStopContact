@@ -264,7 +264,7 @@ class AsyncCommunication extends AsyncTask<String, Integer, Object> {
 		        returnValue = Packet.isSuccesResponse(ans);	
 			} else if (type.equals(ValueType.VALUES_POWER)) {
 				client.sendPacket(Packet.createCommandPacket(Command.getValues()));  
-		        Packet ans = client.waitForPacket(timeout);
+		        Packet ans = client.waitForPacket(timeout * 2);
 		        if (!Packet.isDataPacket(ans)) {
 		            return null;
 		        }

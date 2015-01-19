@@ -5,6 +5,7 @@ import java.util.List;
 import nl.utwente.wsc.models.WSc;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -45,16 +46,15 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 			
 			final TextView name = (TextView) convertView.findViewById(R.id.wsc_name);
 			name.setText(wsc.toString());
+			name.setTextColor(!wsc.isConnected() ? Color.GRAY : Color.BLACK);
 			name.setOnClickListener(new OnClickListener() {
 				
 				@Override
 				public void onClick(View v) {
-					//if (wsc.isConnected() && !wsc.isBusy()) {
-						Intent i = new Intent(mainActivity, WscActivity.class);
-						i.putExtra(MainActivity.EXTRA_WSC, wsc);
-						mainActivity.startActivity(i);
-						mainActivity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-					//}
+					Intent i = new Intent(mainActivity, WscActivity.class);
+					i.putExtra(MainActivity.EXTRA_WSC, wsc);
+					mainActivity.startActivity(i);
+					mainActivity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
 				}
 			});
 			
@@ -84,13 +84,15 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 				case NONE:
 					powerImage.setImageResource(R.drawable.ic_color_none);
 					break;
+				case BLUE:
+					powerImage.setImageResource(R.drawable.ic_color_green);
+					break;
 			}
 			
-			final ProgressBar progressBar = (ProgressBar) convertView.findViewById(R.id.progressBar);
-			
+			final ProgressBar progressBar = (ProgressBar) convertView.findViewById(R.id.progressBar);			
 			if(wsc.isBusy()) {
-				toggleButton.setEnabled(false);
 				progressBar.setVisibility(View.VISIBLE);
+				toggleButton.setEnabled(false);
 			} else {
 				toggleButton.setEnabled(wsc.isConnected());
 				progressBar.setVisibility(View.GONE);

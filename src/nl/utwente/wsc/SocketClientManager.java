@@ -84,7 +84,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	@Override
 	public void doneTask(String address, ValueType type, Object value) {
 		WSc wsc = getKey(address);
-		boolean active = true, succes = value.equals(true);
+		boolean toast = false, active = true, succes = value.equals(true);
 		if (type.equals(ValueType.IS_ON)) {	
 			wsc.setTurnedOn(succes);
 		} else if (type.equals(ValueType.TURN_OFF)) {
@@ -119,12 +119,14 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 				} catch (IOException e) {
 					// Problem
 				}
+				toast = true;
 			} else { 
 				// problem
 			}
 		} else if (type.equals(ValueType.DISCONNECTING)) {
 			if (succes) {
 				wsc.setConnected(false);
+				toast = true;
 			} else { 
 				// problem
 			}			
@@ -132,6 +134,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 			clientList.remove(wsc);
 			callback.updateList();
 			active = false;
+			toast = true;
 		} else {
 			return;
 		}
