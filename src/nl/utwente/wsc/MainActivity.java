@@ -7,6 +7,7 @@ import java.util.List;
 
 import nl.utwente.wsc.SocketClientManager.SCMCallback;
 import nl.utwente.wsc.models.WSc;
+import nl.utwente.wsc.utils.Tools;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.Context;
@@ -231,14 +232,7 @@ public class MainActivity extends ListActivity implements SCMCallback {
     
     public void buildGraph() {
     	GraphView graph = (GraphView) findViewById(R.id.graph);
-    	LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(new DataPoint[] {
-    	          new DataPoint(0, 1),
-    	          new DataPoint(1, 5),
-    	          new DataPoint(2, 3),
-    	          new DataPoint(3, 2),
-    	          new DataPoint(4, 6)
-    	});
-    	series.setDrawBackground(true);
-    	graph.addSeries(series);
+    	int n = manager.getDevices().size();
+    	Tools.buildGraph(10*n, 50*n, this, graph);
     }
 }
