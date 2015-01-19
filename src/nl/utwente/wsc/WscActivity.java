@@ -1,10 +1,9 @@
 package nl.utwente.wsc;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
+import java.text.DateFormat;
 
 import nl.utwente.wsc.SocketClientManager.SCMCallback;
-import nl.utwente.wsc.communication.SocketClient;
 import nl.utwente.wsc.models.WSc;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -25,6 +24,7 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.helper.DateAsXAxisLabelFormatter;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
@@ -195,13 +195,26 @@ public class WscActivity extends Activity implements SCMCallback {
 	public void buildGraph() {
 		
 		if(wsc.hasHistory()) {
-			ProgressBar pb = (ProgressBar) findViewById(R.id.progress);
-			pb.setVisibility(View.GONE);
-			GraphView graph = (GraphView) findViewById(R.id.graph);
-			DataPoint[] dps = wsc.getHistory();
-			LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(wsc.getHistory());
-			series.setDrawBackground(true);
-			graph.addSeries(series);
+			
+					ProgressBar pb = (ProgressBar) findViewById(R.id.progress);
+					pb.setVisibility(View.GONE);
+					GraphView graph = (GraphView) findViewById(R.id.graph);
+					DataPoint[] history = wsc.getHistory();
+					LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(history);
+					series.setDrawBackground(true);
+
+					graph.addSeries(series);
+
+					// set date label formatter
+			        graph.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(this, DateFormat.getTimeInstance()));
+			        graph.getGridLabelRenderer().setNumHorizontalLabels(3); // only 4 because of the space
+
+			        // set manual x bounds to have nice steps
+			        graph.getViewport().setMinX(history[0].getX());
+			        //graph.getViewport().setMaxX(history[history.length-1].getX());
+			        graph.getViewport().setXAxisBoundsManual(true);
+			
+			
 		} else {
 			
 		}
