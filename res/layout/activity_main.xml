@@ -32,6 +32,13 @@
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="@android:color/white" />
 
+        <Button
+            android:id="@+id/button1"
+            style="@style/AppTheme"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:icon="@drawable/ic_sync" />
+
         <ToggleButton
             android:id="@+id/allDevicesToggle"
             android:layout_width="wrap_content"
