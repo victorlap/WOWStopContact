@@ -1,8 +1,9 @@
 package nl.utwente.wsc.models;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Random;
 
 import org.joda.time.DateTime;
 
@@ -87,13 +88,24 @@ public class WSc implements Serializable {
 	}
 	
 	public DataPoint[] getHistory() {
-		DataPoint[] dps = new DataPoint[history.size()];
-		//DataPoint[] dps = new DataPoint[100];
-		int i = 0;
-		for(DateTime datetime : history.keySet()) {
-			dps[i++] = new DataPoint(datetime.toDate(), history.get(datetime));
+//		DataPoint[] dps = new DataPoint[history.size()];
+//		int i = 0;
+//		for(DateTime datetime : history.keySet()) {
+//			dps[i++] = new DataPoint(datetime.toDate(), history.get(datetime));
+//		}
+		DataPoint[] dps = new DataPoint[50];
+		Random rand = new Random();
+		 Calendar calendar = Calendar.getInstance();
+		for(int i = 0; i < dps.length; i++) {
+			calendar.add(Calendar.DATE, 1);
+			double y = rand.nextInt((50 - 10) + 1) + 10;
+			dps[i] = new DataPoint(calendar.getTime(), y);
 		}
 		return dps;
+	}
+	
+	public int getHistoryLength() {
+		return history.size();
 	}
 	
 	@Override
