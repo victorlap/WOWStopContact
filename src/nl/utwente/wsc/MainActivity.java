@@ -1,6 +1,7 @@
 package nl.utwente.wsc;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map.Entry;
