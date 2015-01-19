@@ -39,7 +39,7 @@ public enum ColorType {
         		return type;
         	}
         }
-    	return null;
+    	return NONE;
     }
     
     /**

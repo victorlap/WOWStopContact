@@ -22,6 +22,7 @@ import javax.net.ssl.TrustManagerFactory;
 import nl.utwente.wsc.communication.OnSocManagerTaskCompleted;
 import nl.utwente.wsc.communication.SocketClient;
 import nl.utwente.wsc.communication.ValueType;
+import nl.utwente.wsc.models.ColorType;
 import nl.utwente.wsc.models.WSc;
 import nl.utwente.wsc.utils.FileUtils;
 
@@ -110,7 +111,8 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 				// Problem
 			}
 		} else if (type.equals(ValueType.VALUES_COLOR)) {
-			// TODO
+			succes = true;
+			wsc.setColor(ColorType.getType(value.toString()));
 		} else if (type.equals(ValueType.CONNECTING)) {
 			if (succes) {
 				wsc.setConnected(true);
