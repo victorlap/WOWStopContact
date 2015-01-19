@@ -196,12 +196,10 @@ public class WscActivity extends Activity implements SCMCallback {
 	}
 
 	private void buildGraph() {
-		if(wsc.hasHistory() && wsc.getHistoryLength() > 0) {
 			ProgressBar pb = (ProgressBar) findViewById(R.id.progress);
 			pb.setVisibility(View.GONE);
 			GraphView graph = (GraphView) findViewById(R.id.graph);
 			Tools.buildGraph(10, 50, this, graph);
-		}
 	}
 	
 	private void buildText() {
@@ -212,8 +210,13 @@ public class WscActivity extends Activity implements SCMCallback {
 		
 		Random r = new Random();
 		DecimalFormat f = new DecimalFormat("#");
-		tv1.setText("Powerd on for: "+ f.format(rand(2, 12, r)) +" hours");
-		tv2.setText("Current power draw: "+ f.format(rand(10, 50, r)) +"W");
+		if(wsc.isTurnedOn()) {
+			tv1.setText("Powerd on for: "+ f.format(rand(2, 12, r)) +" hours");
+			tv2.setText("Current power draw: "+ f.format(rand(10, 50, r)) +"W");
+		} else {
+			tv1.setText("Not currently powered on");
+			tv2.setText("Current power draw: None");
+		}
 		double w = rand(0, 1, r);
 		f = new DecimalFormat("#.#");
 		DecimalFormat eu = new DecimalFormat("0.00");
