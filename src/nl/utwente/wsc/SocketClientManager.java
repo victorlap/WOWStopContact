@@ -47,7 +47,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	private SCMCallback callback;
 	private Context context;
 
-	public SocketClientManager(Context context, SCMCallback callback) throws IOException{
+	public SocketClientManager(Context context, SCMCallback callback) throws IOException {
 		this.context = context;
 		this.callback = callback;
 		getSSLContext(context.getAssets().open(CERTIFICATE));
@@ -116,6 +116,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 				wsc.setConnected(true);
 				try {
 					clientList.get(wsc).socketIsOn();
+					clientList.get(wsc).getSocketColor();
 					clientList.get(wsc).getPowerValues();
 				} catch (IOException e) {
 					// Problem
@@ -229,7 +230,6 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	}
 
 	public boolean setDeviceState(WSc wsc, boolean turnOn ) {
-
 		try {
 			if (turnOn && !wsc.isTurnedOn()) {
 				clientList.get(getKey(wsc.getHostname())).turnOnSocket();

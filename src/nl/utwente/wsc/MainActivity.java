@@ -189,13 +189,11 @@ public class MainActivity extends ListActivity implements SCMCallback {
 				String name = nameBox.getText().toString();
 				String host = hostnameBox.getText().toString();
 				
-				int port;
+				int port = -1;
 				try {
 					port = Integer.parseInt(portBox.getText().toString());
-				} catch (NumberFormatException e) {
-					port = DEFAULT_PORTNUMBER;
-				}
-				if(name != null && !name.equals("") && host != null && !host.equals("")) {
+				} catch (NumberFormatException e) {}
+				if(port != -1 && name != null && !name.equals("") && host != null && !host.equals("")) {
 					
 					WSc wsc = new WSc(nameBox.getText().toString(), hostnameBox.getText().toString(), port);
 					manager.addDevice(wsc);
