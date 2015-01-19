@@ -43,6 +43,7 @@ public class SocketClient {
     private final Object lock = new Object();
     
     private boolean stop = true;
+    private boolean stopped = false;
     
     protected SSLSocket sock;
     protected SSLContext sslContext;
@@ -105,6 +106,7 @@ public class SocketClient {
 			@Override
 			public void run() {
 				byte[] headerbuff = new byte[PacketHeader.HEADER_LENGTH];
+				stopped = false;
 	            while (!stop) {
 	                do {
 	                    try {
@@ -153,6 +155,7 @@ public class SocketClient {
 	                }
 	                Log.d(this.toString(), "Got packet: " + packet.toString());
 	            }
+	            stopped = true;
 			}
 		});
         thread.setName("Packet-receiver");
@@ -183,24 +186,35 @@ public class SocketClient {
     	connect(wsc.getHostname(), wsc.getPort());
     }
     
-    public synchronized boolean socketIsOn() throws IOException {
+    public synchronized boolean socketIsOn() {
     	return performAsyncAction(ValueType.IS_ON);
     }
     
-    public synchronized boolean turnOffSocket() throws IOException {
+    public synchronized boolean turnOffSocket() {
     	return performAsyncAction(ValueType.TURN_OFF);
     }
         
-    public synchronized boolean turnOnSocket() throws IOException {
+    public synchronized boolean turnOnSocket() {
     	return performAsyncAction(ValueType.TURN_ON);
     }
     
-    public synchronized boolean getPowerValues() throws IOException {
+    public synchronized boolean getPowerValues() {
     	return performAsyncAction(ValueType.VALUES_POWER);
     }
     
-    public synchronized boolean getSocketColor() throws IOException { 
+    public synchronized boolean getSocketColor() { 
     	return performAsyncAction(ValueType.VALUES_COLOR);
+    }
+    
+    public void resume() {
+    	stop = false;
+    	if (stopped) {
+    		startReceiverThread();
+    	}
+    }
+    
+    public void pauze() {
+    	stop = true;
     }
     
     /**
@@ -253,19 +267,28 @@ class AsyncCommunication extends AsyncTask<String, Integer, Object> {
 			if (type.equals(ValueType.IS_ON)) {		
 		        client.sendPacket(Packet.createCommandPacket(Command.isTurnedOn()));
 		        Packet ans = client.waitForPacket(timeout);
+		        if (ans == null) {
+		        	returnValue = null;
+		        }
 		        returnValue = Packet.isSuccesResponse(ans);	
 			} else if (type.equals(ValueType.TURN_OFF)) {
 				client.sendPacket(Packet.createCommandPacket(Command.turnOff()));
 		        Packet ans = client.waitForPacket(timeout);
+		        if (ans == null) {
+		        	returnValue = null;
+		        }
 		        returnValue = Packet.isSuccesResponse(ans);	
 			} else if (type.equals(ValueType.TURN_ON)) {
 				client.sendPacket(Packet.createCommandPacket(Command.turnOn()));
 		        Packet ans = client.waitForPacket(timeout);
+		        if (ans == null) {
+		        	returnValue = null;
+		        }
 		        returnValue = Packet.isSuccesResponse(ans);	
 			} else if (type.equals(ValueType.VALUES_POWER)) {
 				client.sendPacket(Packet.createCommandPacket(Command.getValues()));  
 		        Packet ans = client.waitForPacket(timeout * 2);
-		        if (!Packet.isDataPacket(ans)) {
+		        if (ans == null || !Packet.isDataPacket(ans)) {
 		            return null;
 		        }
 		        String data = new String(ans.getData());
@@ -287,7 +310,7 @@ class AsyncCommunication extends AsyncTask<String, Integer, Object> {
 			} else if (type.equals(ValueType.VALUES_COLOR)) {
 				client.sendPacket(Packet.createCommandPacket(Command.getColor()));  
 		        Packet ans = client.waitForPacket(timeout);
-		        if (!Packet.isResponsePacket(ans)) {
+		        if (ans == null || !Packet.isResponsePacket(ans)) {
 		            return null;
 		        }    	
 		        returnValue = ColorType.getType(new String(ans.getData()));

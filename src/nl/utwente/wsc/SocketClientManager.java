@@ -14,7 +14,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
@@ -82,10 +84,17 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	 * Place where all callbacks will end up and from here they will be 
 	 * send to all observers.
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public void doneTask(String address, ValueType type, Object value) {
 		WSc wsc = getKey(address);
-		boolean toast = false, active = true, succes = value.equals(true);
+		boolean succes = false;
+		if (value == null) {
+			type = ValueType.CONN_DEAD;
+		} else {
+			succes = value.equals(true);
+		}
+		boolean toast = false, active = true; 			
 		if (type.equals(ValueType.IS_ON)) {	
 			succes = true;
 			wsc.setTurnedOn(succes);
@@ -116,13 +125,9 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 		} else if (type.equals(ValueType.CONNECTING)) {
 			if (succes) {
 				wsc.setConnected(true);
-				try {
-					clientList.get(wsc).socketIsOn();
-					clientList.get(wsc).getSocketColor();
-					clientList.get(wsc).getPowerValues();
-				} catch (IOException e) {
-					// Problem
-				}
+				clientList.get(wsc).socketIsOn();
+				clientList.get(wsc).getSocketColor();
+				//TODO clientList.get(wsc).getPowerValues();
 				toast = true;
 			} else { 
 				// problem
@@ -135,7 +140,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 				// problem
 			}			
 		} else if (type.equals(ValueType.CONN_DEAD)) {
-			clientList.remove(wsc);
+			wsc.setConnected(false);
 			callback.updateList();
 			active = false;
 			toast = true;
@@ -154,9 +159,13 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 			"Device \"" + wsc.getName() + "\"" + action) 
 			+ (active && succes ? " succes" : " failed"), false);
 	}
-
+	
 	public List<WSc> getDevices() {
 		return new ArrayList<WSc>(clientList.keySet());
+	}
+
+	public Set<Entry<WSc, SocketClient>> getEntries() {
+		return clientList.entrySet();
 	}
 
 	public void updateDevice(WSc updated) {
@@ -200,11 +209,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 		Boolean[] states = new Boolean[clientList.size()];
 		int counter = 0;
 		for (SocketClient client : clientList.values()) {	
-			try {
-				states[counter] = client.socketIsOn();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			states[counter] = client.socketIsOn();
 			counter++;
 		}
 		return states;
@@ -216,14 +221,10 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	 * @param turnOn whether to turn them on or off
 	 * @return whether this has succeeded on all devices
 	 */
-	public boolean setDevicesState(boolean turnOn) {
-		boolean succes = true;
+	public void setDevicesState(boolean turnOn) {
 		for (WSc wsc : clientList.keySet()) {
-			if(!setDeviceState(wsc, turnOn)) {
-				succes = false;
-			}
+			setDeviceState(wsc, turnOn);
 		}
-		return succes;
 	}
 
 	/**
@@ -232,24 +233,18 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	 * @param turnOn whether to turn it on or off
 	 * @return whether this has succeeded
 	 */	
-	public boolean setDeviceState(int index, boolean turnOn) {
-		return setDeviceState(getKey(index), turnOn);
+	public void setDeviceState(int index, boolean turnOn) {
+		setDeviceState(getKey(index), turnOn);
 	}
 
-	public boolean setDeviceState(WSc wsc, boolean turnOn) {
-		try {
-			if (turnOn && !wsc.isTurnedOn()) {
-				clientList.get(getKey(wsc.getHostname())).turnOnSocket();
-				wsc.setBusy(true);
-			} else if(!turnOn && wsc.isTurnedOn()) {
-				clientList.get(getKey(wsc.getHostname())).turnOffSocket();
-				wsc.setBusy(true);
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
+	public void setDeviceState(WSc wsc, boolean turnOn) {
+		if (turnOn && !wsc.isTurnedOn()) {
+			clientList.get(getKey(wsc.getHostname())).turnOnSocket();
+			wsc.setBusy(true);
+		} else if(!turnOn && wsc.isTurnedOn()) {
+			clientList.get(getKey(wsc.getHostname())).turnOffSocket();
+			wsc.setBusy(true);
 		}
-		return true;
 	}
 
 	/**
@@ -258,16 +253,10 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	 * 
 	 * @return the array of color types
 	 */
-	public boolean getDevicesColor() {	
-		boolean succes = true;
+	public void getDevicesColor() {	
 		for (SocketClient client : clientList.values()) {	
-			try {
 				client.getSocketColor();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		}
-		return succes;
 	}
 
 	/**
@@ -276,16 +265,10 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	 * 
 	 * @return the array of color types
 	 */
-	public boolean getDevicesValues() {		
-		boolean succes = true;
+	public void getDevicesValues() {		
 		for (SocketClient client : clientList.values()) {	
-			try {
-				client.getPowerValues();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			client.getPowerValues();
 		}
-		return succes;
 	}
 
 	private WSc getKey(int index) {
@@ -310,9 +293,26 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 		} 
 		return null;
 	}
+	
+	public void resume() {
+		for (SocketClient client : clientList.values()) {
+			if(client.alive()) {
+				client.resume();		
+			}
+		}			
+	}
+	
+	public void pauze() {
+		for (SocketClient client : clientList.values()) {
+			if(client.alive()) {
+				client.pauze();		
+			}
+		}	
+		save();
+	}
 
 	public void stop() {
-		for(SocketClient client : clientList.values()) {
+		for (SocketClient client : clientList.values()) {
 			if(client.alive()) {
 				client.disconnect();		
 			}

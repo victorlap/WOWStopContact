@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
+import java.util.Map.Entry;
 
 import nl.utwente.wsc.SocketClientManager.SCMCallback;
+import nl.utwente.wsc.communication.SocketClient;
 import nl.utwente.wsc.models.WSc;
 import nl.utwente.wsc.utils.Tools;
 import android.app.AlertDialog;
@@ -24,8 +26,6 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.series.LineGraphSeries;
 
 
 public class MainActivity extends ListActivity implements SCMCallback {
@@ -75,7 +75,8 @@ public class MainActivity extends ListActivity implements SCMCallback {
     protected void onResume() {
     	super.onResume();
     	if (wasPaused) {
-    		startSocketManager();
+        	manager.resume();
+    		refreshDevices();
     	}
         //BASE_IP = getBaseIP();
     }
@@ -83,14 +84,13 @@ public class MainActivity extends ListActivity implements SCMCallback {
     @Override
     protected void onPause() {
     	super.onPause();
+    	manager.pauze();
     	wasPaused = true;
-    	stopSocketManager();
     }
 		
 	@Override
     public void onBackPressed() {
     	super.onBackPressed();
-    	// TODO pause client update list
     }
 
     @Override
@@ -122,10 +122,10 @@ public class MainActivity extends ListActivity implements SCMCallback {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-    	manager.getDevicesValues();
+    	//TODOmanager.getDevicesValues();
     	switch(item.getItemId()) {
     		case R.id.action_refresh:
-    			startSocketManager();
+    			refreshDevices();
     			return true;
 	    	case R.id.action_add_wsc:
 	    		showAddWscDialog();
@@ -133,6 +133,21 @@ public class MainActivity extends ListActivity implements SCMCallback {
     		default:
     			return super.onOptionsItemSelected(item);
     	}
+    }
+    
+    private void refreshDevices() {
+		for (Entry<WSc, SocketClient> entry : manager.getEntries()) {
+			entry.getKey().setBusy(true);
+			updateList();    	
+			if (entry.getKey().isConnected()) {
+				entry.getValue().socketIsOn();
+				entry.getValue().getSocketColor();
+			} else {
+				try {
+					entry.getValue().connect(entry.getKey());
+				} catch (UnknownHostException e) {}
+			}			
+		}
     }
 
     private void startSocketManager() {

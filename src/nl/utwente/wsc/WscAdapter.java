@@ -81,11 +81,11 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 				case GREEN:
 					powerImage.setImageResource(R.drawable.ic_color_green);
 					break;
+				case BLUE:
+					powerImage.setImageResource(R.drawable.ic_color_blue);
+					break;
 				case NONE:
 					powerImage.setImageResource(R.drawable.ic_color_none);
-					break;
-				case BLUE:
-					powerImage.setImageResource(R.drawable.ic_color_green);
 					break;
 			}
 			
