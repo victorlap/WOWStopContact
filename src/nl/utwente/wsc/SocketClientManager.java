@@ -2,7 +2,6 @@ package nl.utwente.wsc;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -11,6 +10,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,6 +24,9 @@ import nl.utwente.wsc.communication.SocketClient;
 import nl.utwente.wsc.communication.ValueType;
 import nl.utwente.wsc.models.WSc;
 import nl.utwente.wsc.utils.FileUtils;
+
+import org.joda.time.DateTime;
+
 import android.content.Context;
 import android.database.Observable;
 import android.util.Log;
@@ -99,14 +102,13 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 		} else if (type.equals(ValueType.VALUES_POWER)) {
 			if(!value.equals("-1")) {		
 				// Asume object is large string with format:
-				// 01:10 06-01-2015,230;02:10 06-01-2015,290;03:10 06-01-2015,200;”
-				String[] values = ((String) value).split(";");
-				wsc.setHistory(values);
+				// 4865448654,230;7896546451,290;12354,200;”
+				wsc.setHistory((HashMap<DateTime, Integer>) value);
 			} else {
 				// Problem
 			}
 		} else if (type.equals(ValueType.VALUES_COLOR)) {
-
+			// TODO
 		} else if (type.equals(ValueType.CONNECTING)) {
 			if (succes) {
 				wsc.setConnected(true);
@@ -168,11 +170,6 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 		clientList.get(wsc).disconnect();
 		clientList.remove(wsc);	
 		callback.updateList();
-	}
-	
-	public SocketClient getConnectedClient(WSc wsc) throws UnknownHostException {
-		clientList.get(wsc).connect(wsc);
-		return clientList.get(wsc);
 	}
 
 	public void removeDevice(String address) {

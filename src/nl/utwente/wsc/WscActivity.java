@@ -198,6 +198,7 @@ public class WscActivity extends Activity implements SCMCallback {
 			ProgressBar pb = (ProgressBar) findViewById(R.id.progress);
 			pb.setVisibility(View.GONE);
 			GraphView graph = (GraphView) findViewById(R.id.graph);
+			DataPoint[] dps = wsc.getHistory();
 			LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(wsc.getHistory());
 			series.setDrawBackground(true);
 			graph.addSeries(series);

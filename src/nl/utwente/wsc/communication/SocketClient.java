@@ -274,7 +274,7 @@ class AsyncCommunication extends AsyncTask<String, Integer, Object> {
 		        for (String valuePair : valuePairs) {
 		        	String[] splitted = valuePair.split(",");
 		        	try {
-		        		values.put(DateTime.parse(splitted[0]), Integer.parseInt(splitted[1]));
+		        		values.put(new DateTime(Long.parseLong(splitted[0])), Integer.parseInt(splitted[1]));
 		        	} catch (Exception e) {
 		        		Log.e(this.toString(), "invalid value pair: " + valuePair);
 		        	}
