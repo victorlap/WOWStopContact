@@ -1,7 +1,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="nl.utwente.wowstopcontact.MainActivity" >
-
+    
+    <item
+        android:id="@+id/view_progress"
+        android:actionLayout="@layout/menu_progress"
+        android:showAsAction="always"
+        android:title=""/>
     <item
         android:id="@+id/action_toggle_wsc"
         android:actionLayout="@layout/menu_toggle"

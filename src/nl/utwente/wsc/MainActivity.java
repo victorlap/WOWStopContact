@@ -63,6 +63,7 @@ public class MainActivity extends ListActivity implements SCMCallback {
 				toggle_devices.setChecked(false);
 				toggle_devices.setEnabled(false);
 				manager.setDevicesState(false);
+				updateList();
 			}
 		});
         

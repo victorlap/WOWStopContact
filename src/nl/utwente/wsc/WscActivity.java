@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.opengl.Visibility;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.NavUtils;
@@ -59,7 +60,7 @@ public class WscActivity extends Activity implements SCMCallback {
 		new Handler().post(new Runnable() {
 			@Override
 			public void run() {
-				set_toggle();
+				updateList();
 			}
 		});
 
@@ -96,14 +97,14 @@ public class WscActivity extends Activity implements SCMCallback {
 		}
 	}
 
-	private void set_toggle() {
-		ToggleButton tb = (ToggleButton) findViewById(R.id.switchForActionBar);
-		tb.setEnabled(wsc.isConnected() && wsc.isTurnedOn());
-	}
-
 	private void toggle_wsc() {
-		// TODO Auto-generated method stub
-
+		ToggleButton tb = (ToggleButton) findViewById(R.id.switchForActionBar);
+		ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressForActionBar);
+		tb.setEnabled(false);	
+		progressBar.setVisibility(View.VISIBLE);
+		wsc.setBusy(true);
+		manager.setDeviceState(wsc, tb.isChecked());	
+		invalidateOptionsMenu();
 	}
 
 	public void startSocketManager() {
@@ -192,10 +193,8 @@ public class WscActivity extends Activity implements SCMCallback {
 		dialog.show();
 	}
 
-	public void buildGraph() {
-		
-		if(wsc.hasHistory()) {
-			
+	public void buildGraph() {		
+		if(wsc.hasHistory()) {		
 					ProgressBar pb = (ProgressBar) findViewById(R.id.progress);
 					pb.setVisibility(View.GONE);
 					GraphView graph = (GraphView) findViewById(R.id.graph);
@@ -212,19 +211,21 @@ public class WscActivity extends Activity implements SCMCallback {
 			        // set manual x bounds to have nice steps
 			        graph.getViewport().setMinX(history[0].getX());
 			        //graph.getViewport().setMaxX(history[history.length-1].getX());
-			        graph.getViewport().setXAxisBoundsManual(true);
-			
-			
+			        graph.getViewport().setXAxisBoundsManual(true);			
 		} else {
 			
 		}
-		
-		
+				
 	}
 
 	@Override
 	public void updateList() {
-		// Do nothing, we don;t have a list
+		ToggleButton tb = (ToggleButton) findViewById(R.id.switchForActionBar);
+		ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressForActionBar);	
+		tb.setEnabled(wsc.isConnected() && !wsc.isBusy());
+		tb.setChecked(wsc.isTurnedOn());
+		progressBar.setVisibility(wsc.isBusy() ? View.VISIBLE : View.GONE);
+		invalidateOptionsMenu();
 	}
 
 	@Override

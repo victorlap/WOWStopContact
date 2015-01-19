@@ -142,8 +142,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 		}
 		if (toast) {
 			toastDeviceUpdate(wsc, type.toFriendlyString(), active, succes);	
-		}
-		
+		}		
 		wsc.setBusy(false);
 		callback.updateList();
 	}
@@ -235,7 +234,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 		return setDeviceState(getKey(index), turnOn);
 	}
 
-	public boolean setDeviceState(WSc wsc, boolean turnOn ) {
+	public boolean setDeviceState(WSc wsc, boolean turnOn) {
 		try {
 			if (turnOn && !wsc.isTurnedOn()) {
 				clientList.get(getKey(wsc.getHostname())).turnOnSocket();

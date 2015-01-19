@@ -7,6 +7,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
 
+import nl.utwente.wsc.models.ColorType;
 import nl.utwente.wsc.models.WSc;
 import android.content.Context;
 
@@ -19,6 +20,12 @@ public final class FileUtils {
 	}
 
 	public static void saveToFile(Context c, List<WSc> list) throws IOException {
+		for (WSc wsc : list) {
+			wsc.setConnected(false);
+			wsc.setTurnedOn(false);
+			wsc.setBusy(false);
+			wsc.setColor(ColorType.NONE);
+		}
 		FileOutputStream fileOut = c.openFileOutput(WSC_LIST_PATH, Context.MODE_PRIVATE);
 		ObjectOutputStream out = new ObjectOutputStream(fileOut);
 		out.writeObject(list);

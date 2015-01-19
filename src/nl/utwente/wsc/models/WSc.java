@@ -17,10 +17,10 @@ public class WSc implements Serializable {
 	private String hostname;
 	private int port;
 	
-	private transient boolean connected;
-	private transient boolean turnedOn;
-	private transient ColorType color;
-	private transient boolean busy;
+	private boolean connected;
+	private boolean turnedOn;
+	private boolean busy;
+	private ColorType color;
 	private HashMap<DateTime, Integer> history;
 	
 	public WSc(String name, String hostname, int port) {
