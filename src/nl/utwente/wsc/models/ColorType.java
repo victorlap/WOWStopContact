@@ -21,7 +21,11 @@ public enum ColorType {
     /**
      * LED of WSc emits red light.
      */
-    RED;
+    RED,
+    /**
+     * LED of WSc emits blue light.
+     */   
+    BLUE;
                 
     /**
      * Gets the color type belonging to this string.
