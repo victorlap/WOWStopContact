@@ -71,6 +71,9 @@ public class Tools {
         // set manual x bounds to have nice steps
         graph.getViewport().setScalable(true);
         graph.getViewport().setScrollable(true);
+        graph.getViewport().setMinY(0);
+        graph.getViewport().setMaxY(max+10);
+        graph.getViewport().setYAxisBoundsManual(true);
         graph.getViewport().setMinX(history[0].getX());
         graph.getViewport().setMaxX(history[history.length-1].getX());
         graph.getViewport().setXAxisBoundsManual(true);
