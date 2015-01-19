@@ -42,8 +42,13 @@ public class Tools {
         while (System.nanoTime() - currTime <= sleepTime);
     }
     
-    public static void buildGraph(int min, int max, final Context context, GraphView graph) {
+    public static void buildGraph(int min, int max, final Context context, GraphView graph, boolean turnedOn) {
     	DataPoint[] history = getRandomDataPoints(min, max);
+    	if(!turnedOn) {
+	    	for(int i = history.length-1; i > history.length-4; i--) {
+	    		history[i] = new DataPoint(history[i].getX(), 0);
+	    	}
+    	}
     	LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(history);
 		series.setDrawBackground(true);
 		graph.addSeries(series);
