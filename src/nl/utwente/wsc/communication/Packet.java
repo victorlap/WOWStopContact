@@ -78,7 +78,7 @@ public class Packet {
                     sb.append(", ");
                     break;
                 case DATA:
-                    sb.append(Arrays.toString(data));
+                    sb.append(new String(data));
                     sb.append(", ");
                     break;
                 case RESPONSE:

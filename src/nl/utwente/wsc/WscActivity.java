@@ -45,9 +45,9 @@ public class WscActivity extends Activity implements SCMCallback {
 
 		setTitle(wsc.getName());
 		
-		buildGraph();
-
 		startSocketManager();
+		
+		buildGraph();
 
 	}
 

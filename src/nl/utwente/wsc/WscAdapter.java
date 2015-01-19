@@ -19,7 +19,7 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 	
 	private List<WSc> objects;
 	private SocketClientManager manager;
-	private MainActivity mainActivity;
+	private final MainActivity mainActivity;
 
 	public WscAdapter(Context context, List<WSc> objects, SocketClientManager manager, MainActivity mainActivity) {
 		super(context, R.layout.listitem_wsc, objects);
@@ -49,10 +49,12 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 				
 				@Override
 				public void onClick(View v) {
-					Intent i = new Intent(mainActivity, WscActivity.class);
-					i.putExtra(MainActivity.EXTRA_WSC, wsc);
-					mainActivity.startActivity(i);
-					mainActivity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+					//if (wsc.isConnected() && !wsc.isBusy()) {
+						Intent i = new Intent(mainActivity, WscActivity.class);
+						i.putExtra(MainActivity.EXTRA_WSC, wsc);
+						mainActivity.startActivity(i);
+						mainActivity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+					//}
 				}
 			});
 			

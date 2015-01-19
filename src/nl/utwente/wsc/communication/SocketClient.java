@@ -37,7 +37,7 @@ import android.util.Log;
  */
 public class SocketClient {
 	
-	public static final int TIMEOUT = 4000;
+	public static final int TIMEOUT = 1000;
 	public static final String TAG = "SocketClient";
     
     private final Object lock = new Object();

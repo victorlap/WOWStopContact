@@ -20,7 +20,7 @@ public class WSc implements Serializable {
 	private transient boolean turnedOn;
 	private transient ColorType color;
 	private transient boolean busy;
-	private DataPoint[] history;
+	private DataPoint[] history; //also transient?
 	
 	public WSc(String name, String hostname, int port) {
 		this.name = name;
