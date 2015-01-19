@@ -86,6 +86,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 		WSc wsc = getKey(address);
 		boolean active = true, succes = value.equals(true);
 		if (type.equals(ValueType.IS_ON)) {	
+			succes = true;
 			wsc.setTurnedOn(succes);
 		} else if (type.equals(ValueType.TURN_OFF)) {
 			if (succes) {
@@ -103,6 +104,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 			if(!value.equals("-1")) {		
 				// Asume object is large string with format:
 				// 4865448654,230;7896546451,290;12354,200;”
+				succes = true;
 				wsc.setHistory((HashMap<DateTime, Integer>) value);
 			} else {
 				// Problem

@@ -278,6 +278,10 @@ class AsyncCommunication extends AsyncTask<String, Integer, Object> {
 		        	} catch (Exception e) {
 		        		Log.e(this.toString(), "invalid value pair: " + valuePair);
 		        	}
+		        	if(values.size() > 100) {
+		        		returnValue = values;
+		        		break;
+		        	}
 		        }
 		        returnValue = values;
 			} else if (type.equals(ValueType.VALUES_COLOR)) {

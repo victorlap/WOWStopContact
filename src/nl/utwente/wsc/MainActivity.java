@@ -122,6 +122,9 @@ public class MainActivity extends ListActivity implements SCMCallback {
         // as you specify a parent activity in AndroidManifest.xml.
     	manager.getDevicesValues();
     	switch(item.getItemId()) {
+    		case R.id.action_refresh:
+    			startSocketManager();
+    			return true;
 	    	case R.id.action_add_wsc:
 	    		showAddWscDialog();
 	    		return true;
