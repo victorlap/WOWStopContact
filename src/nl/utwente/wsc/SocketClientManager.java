@@ -110,6 +110,12 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 		} else if (type.equals(ValueType.CONNECTING)) {
 			if (succes) {
 				wsc.setConnected(true);
+				try {
+					clientList.get(wsc).socketIsOn();
+					clientList.get(wsc).getPowerValues();
+				} catch (IOException e) {
+					// Problem
+				}
 			} else { 
 				// problem
 			}
