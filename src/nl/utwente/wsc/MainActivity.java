@@ -1,8 +1,6 @@
 package nl.utwente.wsc;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Random;
@@ -30,8 +28,6 @@ import com.jjoe64.graphview.GraphView;
 
 
 public class MainActivity extends ListActivity implements SCMCallback {
-
-	private static final String TAG = "MainActivity";
 
 	public static final int    DEFAULT_PORTNUMBER = 7331;
 	public static final String EXTRA_WSC = "extra_wsc";
@@ -99,17 +95,6 @@ public class MainActivity extends ListActivity implements SCMCallback {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
-	}
-
-	private String getBaseIP() {
-		String[] parts;
-		try {
-			parts = InetAddress.getLocalHost().toString().split("\\.");
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-			return "";
-		}
-		return parts[0] + "." + parts[1] + ".";
 	}
 
 	@Override

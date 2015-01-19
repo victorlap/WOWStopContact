@@ -102,7 +102,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 				// Could not turn it on
 			}
 		} else if (type.equals(ValueType.VALUES_POWER)) {
-			if(!value.equals("-1")) {		
+			if(!value.equals("-1") && value instanceof HashMap<?,?>) {		
 				// Asume object is large string with format:
 				// 4865448654,230;7896546451,290;12354,200;”
 				succes = true;
