@@ -140,7 +140,10 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 		} else {
 			return;
 		}
-		toastDeviceUpdate(wsc, type.toFriendlyString(), active, succes);
+		if (toast) {
+			toastDeviceUpdate(wsc, type.toFriendlyString(), active, succes);	
+		}
+		
 		wsc.setBusy(false);
 		callback.updateList();
 	}
@@ -148,7 +151,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	private void toastDeviceUpdate(WSc wsc, String action, boolean active, boolean succes) {
 		callback.toastMessage(context, (active ? action + " device \"" + wsc.getName() + "\"" : 
 			"Device \"" + wsc.getName() + "\"" + action) 
-			+ (active && succes ? "succes" : " failed"), false);
+			+ (active && succes ? " succes" : " failed"), false);
 	}
 
 	public List<WSc> getDevices() {
