@@ -10,8 +10,6 @@ import nl.utwente.wsc.utils.Tools;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,6 +17,7 @@ import android.support.v4.app.NavUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -32,6 +31,7 @@ public class WscActivity extends Activity implements SCMCallback {
 
 	private WSc wsc;
 	private SocketClientManager manager;
+	private boolean createdMenu = true;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +39,8 @@ public class WscActivity extends Activity implements SCMCallback {
 		setContentView(R.layout.activity_wsc);
 
 		getActionBar().setDisplayHomeAsUpEnabled(true);
-
+		getActionBar().setHomeButtonEnabled(true);
+		
 		Intent i = getIntent();
 		wsc = (WSc) i.getSerializableExtra(MainActivity.EXTRA_WSC);
 
@@ -50,39 +51,38 @@ public class WscActivity extends Activity implements SCMCallback {
 		buildGraph();
 
 		buildText();
-
+		createdMenu = false;
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.wsc, menu);
-
-		new Handler().post(new Runnable() {
-			@Override
-			public void run() {
-				updateList();
-			}
-		});
+		if (!createdMenu) {
+			new Handler().post(new Runnable() {
+				@Override
+				public void run() {
+					ToggleButton tb = (ToggleButton) findViewById(R.id.switchForActionBar);
+					tb.setOnClickListener(new OnClickListener() {					
+						@Override
+						public void onClick(View v) {
+							toggle_wsc();						
+						}
+					});
+					updateList();
+				}
+			});
+		}
 
 		return true;
 	}
-
-	@Override
-	public void onBackPressed() {
-		super.onBackPressed();
-		//overridePendingTransition(android.R.anim.fade_out, android.R.anim.fade_in);
-	}
-
+	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle action bar item clicks here. The action bar will
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		switch(item.getItemId()) {
-		case R.id.action_toggle_wsc:
-			toggle_wsc();
-			return true;
 		case R.id.action_edit_wsc:
 			showEditWscDialog();
 			return true;
@@ -90,8 +90,8 @@ public class WscActivity extends Activity implements SCMCallback {
 			remove();
 			return true;
 		case android.R.id.home:
+			manager.pauze();
 			NavUtils.navigateUpFromSameTask(this);
-			//overridePendingTransition(android.R.anim.fade_out, android.R.anim.fade_in);
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -112,8 +112,9 @@ public class WscActivity extends Activity implements SCMCallback {
 		if(manager == null) {
 			try {
 				manager = new SocketClientManager(this, this);
+				manager.connect();
+				manager.pauzeAllClientsExcept(wsc);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -122,33 +123,38 @@ public class WscActivity extends Activity implements SCMCallback {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		startSocketManager();
+		manager.resume();
 	}
 
 	@Override 
 	protected void onPause() {
-		manager.save();
+		manager.pauze();
 		super.onPause();
+	}
+	
+	@Override
+	public void onBackPressed() {
+		manager.pauze();
+		super.onBackPressed();
 	}
 
 	@Override
 	protected void onStop() {
-		manager.save();
+		manager.stop();
 		super.onStop();
 	}
 
 	@Override
 	protected void onDestroy() {
-		manager.save();
+		manager.stop();
 		super.onDestroy();
 	}
 
 	private void remove() {
 		manager.removeDevice(wsc.getHostname());
+		manager.stop();
 		Toast.makeText(this, "WSc "+ wsc.getName() +" removed", Toast.LENGTH_SHORT).show();
-		manager.save();
 		finish();
-		//overridePendingTransition(android.R.anim.fade_out, android.R.anim.fade_in);
 	}
 
 	private void showEditWscDialog() {
@@ -166,16 +172,16 @@ public class WscActivity extends Activity implements SCMCallback {
 
 		dialog.setView(layout);
 
-		dialog.setPositiveButton("Edit", new OnClickListener() {		
+		dialog.setPositiveButton("Edit", new android.content.DialogInterface.OnClickListener() {		
 			@Override
-			public void onClick(DialogInterface dialog, int which) {
+			public void onClick(android.content.DialogInterface dialog, int which) {
 				String name = nameBox.getText().toString();
 
 				if(name != null && !name.equals("")) {
-
 					wsc.setName(name);
 					setTitle(wsc.getName());
 					manager.updateDevice(wsc);
+					manager.save();
 					dialog.dismiss();
 				} else {
 					Toast.makeText(getApplication(), "Please fill in a correct name", Toast.LENGTH_SHORT).show();
@@ -183,10 +189,10 @@ public class WscActivity extends Activity implements SCMCallback {
 			}
 		});
 
-		dialog.setNegativeButton("Cancel", new OnClickListener() {
+		dialog.setNegativeButton("Cancel", new android.content.DialogInterface.OnClickListener() {
 
 			@Override
-			public void onClick(DialogInterface dialog, int which) {
+			public void onClick(android.content.DialogInterface dialog, int which) {
 				dialog.dismiss();
 			}
 		});
@@ -210,7 +216,7 @@ public class WscActivity extends Activity implements SCMCallback {
 		Random r = new Random();
 		DecimalFormat f = new DecimalFormat("#");
 		if(wsc.isTurnedOn()) {
-			tv1.setText("Powerd on for: "+ f.format(rand(2, 12, r)) +" hours");
+			tv1.setText("Powered on for: "+ f.format(rand(2, 12, r)) +" hours");
 			tv2.setText("Current power draw: "+ f.format(rand(10, 50, r)) +"W");
 		} else {
 			tv1.setText("Not currently powered on");
@@ -236,7 +242,7 @@ public class WscActivity extends Activity implements SCMCallback {
 		tb.setEnabled(wsc.isConnected() && !wsc.isBusy());
 		tb.setChecked(wsc.isTurnedOn());
 		progressBar.setVisibility(wsc.isBusy() ? View.VISIBLE : View.GONE);
-		invalidateOptionsMenu();
+		//invalidateOptionsMenu();
 	}
 
 	@Override

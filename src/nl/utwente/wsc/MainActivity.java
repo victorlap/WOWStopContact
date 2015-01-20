@@ -34,6 +34,7 @@ public class MainActivity extends ListActivity implements SCMCallback {
 
 	public static final int    DEFAULT_PORTNUMBER = 7331;
 	public static final String EXTRA_WSC = "extra_wsc";
+
 	public static String BASE_IP;
 
 	private SocketClientManager manager;
@@ -44,6 +45,7 @@ public class MainActivity extends ListActivity implements SCMCallback {
 	private WscAdapter adapter;
 
 	private boolean wasPaused;
+	private boolean deactivated = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

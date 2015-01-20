@@ -262,6 +262,15 @@ public class SocketClient {
     	return performAsyncAction(type, true, new String[]{});
     }
     
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof SocketClient) {
+			SocketClient other = (SocketClient)o;
+			return other.sock == null ? sock == null : other.sock.equals(sock);
+		}
+		return false;
+	}
+    
 }
 
 class AsyncCommunication extends AsyncTask<String, Integer, Object> {
@@ -378,4 +387,5 @@ class AsyncCommunication extends AsyncTask<String, Integer, Object> {
 		}
 		return returnValue;
 	}
+	
 }

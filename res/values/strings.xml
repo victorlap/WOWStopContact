@@ -14,8 +14,8 @@
     <string name="wscs">WSc\'s</string>
     <string name="view_wscs">View WSc\'s</string>
     <string name="add_wsc">Add WSc</string>
-    <string name="edit_wsc">Edit WSc</string>
-    <string name="remove_wsc">Remove WSc</string>
+    <string name="edit_wsc">Edit device</string>
+    <string name="remove_wsc">Remove device</string>
     <string name="refresh">Refresh</string>
     
     <string name="my_devices">My Devices</string>

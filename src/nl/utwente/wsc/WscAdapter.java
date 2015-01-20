@@ -51,10 +51,11 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 				
 				@Override
 				public void onClick(View v) {
-					Intent i = new Intent(mainActivity, WscActivity.class);
-					i.putExtra(MainActivity.EXTRA_WSC, wsc);
-					mainActivity.startActivity(i);
-					//mainActivity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+					if (!wsc.isBusy()) {
+						Intent i = new Intent(mainActivity, WscActivity.class);
+						i.putExtra(MainActivity.EXTRA_WSC, wsc);
+						mainActivity.startActivity(i);
+					}
 				}
 			});
 			

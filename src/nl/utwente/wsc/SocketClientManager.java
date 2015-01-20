@@ -2,6 +2,7 @@ package nl.utwente.wsc;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -14,7 +15,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -46,7 +46,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	private static final String CERTIFICATE = "server.crt";	
 	private static SSLContext SSLC;
 
-	LinkedHashMap<WSc, SocketClient> clientList = new LinkedHashMap<WSc, SocketClient>();
+	private LinkedHashMap<WSc, SocketClient> clientList = new LinkedHashMap<WSc, SocketClient>();
 	private SCMCallback callback;
 	private Context context;
 
@@ -296,15 +296,25 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	
 	public void resume() {
 		for (SocketClient client : clientList.values()) {
-			if(client.alive()) {
+			if (client.alive()) {
 				client.resume();		
 			}
 		}			
 	}
+		
+	public void pauzeAllClientsExcept(WSc exception) {
+		SocketClient excClient = clientList.get(exception);
+		for (SocketClient client : clientList.values()) {
+			if (client.alive() && !excClient.equals(excClient)) {
+				client.pauze();		
+			}
+		}	
+		save();		
+	}
 	
 	public void pauze() {
 		for (SocketClient client : clientList.values()) {
-			if(client.alive()) {
+			if (client.alive()) {
 				client.pauze();		
 			}
 		}	
@@ -313,7 +323,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 
 	public void stop() {
 		for (SocketClient client : clientList.values()) {
-			if(client.alive()) {
+			if (client.alive()) {
 				client.disconnect();		
 			}
 		}
