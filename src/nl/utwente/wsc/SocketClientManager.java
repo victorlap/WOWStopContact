@@ -89,6 +89,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	public void doneTask(String address, ValueType type, Object value) {
 		WSc wsc = getKey(address);
 		boolean succes = false;
+		boolean done = true;
 		if (value == null) {
 			type = ValueType.CONN_DEAD;
 		} else {
@@ -96,20 +97,14 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 		}
 		boolean toast = false, active = true; 			
 		if (type.equals(ValueType.IS_ON)) {	
-			succes = true;
+			done = false;
 			wsc.setTurnedOn(succes);
 		} else if (type.equals(ValueType.TURN_OFF)) {
-			if (succes) {
-				wsc.setTurnedOn(false);
-			} else {
-				// Could not turn it off
-			}			
+			wsc.setTurnedOn(!succes);			
 		} else if (type.equals(ValueType.TURN_ON)) {
-			if (succes) {
-				wsc.setTurnedOn(true);
-			} else {
-				// Could not turn it on
-			}
+			done = false;
+			wsc.setTurnedOn(succes);
+			clientList.get(wsc).getSocketColor();
 		} else if (type.equals(ValueType.VALUES_POWER)) {
 			if(!value.equals("-1") && value instanceof HashMap<?,?>) {		
 				// Asume object is large string with format:
@@ -124,6 +119,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 			wsc.setColor(ColorType.getType(value.toString()));
 		} else if (type.equals(ValueType.CONNECTING)) {
 			if (succes) {
+				done = false;
 				wsc.setConnected(true);
 				clientList.get(wsc).socketIsOn();
 				clientList.get(wsc).getSocketColor();
@@ -141,17 +137,21 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 			}			
 		} else if (type.equals(ValueType.CONN_DEAD)) {
 			wsc.setConnected(false);
-			callback.updateList();
+			wsc.setTurnedOn(false);
 			active = false;
 			toast = true;
+			done = false;
+			callback.updateList();
 		} else {
 			return;
 		}
 		if (toast) {
 			toastDeviceUpdate(wsc, type.toFriendlyString(), active, succes);	
 		}		
-		wsc.setBusy(false);
-		callback.updateList();
+		if (done) {
+			wsc.setBusy(false);
+			callback.updateList();
+		}
 	}
 
 	private void toastDeviceUpdate(WSc wsc, String action, boolean active, boolean succes) {

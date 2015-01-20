@@ -2,6 +2,7 @@ package nl.utwente.wsc;
 
 import java.util.List;
 
+import nl.utwente.wsc.models.ColorType;
 import nl.utwente.wsc.models.WSc;
 import android.content.Context;
 import android.content.Intent;
@@ -64,29 +65,34 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 				
 				@Override
 				public void onClick(View v) {
-					manager.setDeviceState(wsc, toggleButton.isChecked());
-					wsc.setTurnedOn(toggleButton.isChecked());
+					boolean turnOn = toggleButton.isChecked();
+					manager.setDeviceState(wsc, turnOn);
+					wsc.setTurnedOn(turnOn);
 					mainActivity.updateList();
 				}
 			});
 			
 			final ImageView powerImage = (ImageView) convertView.findViewById(R.id.powerImage);
-			switch(wsc.getColor()) {
-				case RED:
-					powerImage.setImageResource(R.drawable.ic_color_red);
-					break;
-				case ORANGE:
-					powerImage.setImageResource(R.drawable.ic_color_orange);
-					break;
-				case GREEN:
-					powerImage.setImageResource(R.drawable.ic_color_green);
-					break;
-				case BLUE:
-					powerImage.setImageResource(R.drawable.ic_color_blue);
-					break;
-				case NONE:
-					powerImage.setImageResource(R.drawable.ic_color_none);
-					break;
+			if (!wsc.isTurnedOn()) {
+				powerImage.setImageResource(R.drawable.ic_color_none);
+			} else {
+				switch(wsc.getColor()) {
+					case RED:
+						powerImage.setImageResource(R.drawable.ic_color_red);
+						break;
+					case ORANGE:
+						powerImage.setImageResource(R.drawable.ic_color_orange);
+						break;
+					case GREEN:
+						powerImage.setImageResource(R.drawable.ic_color_green);
+						break;
+					case BLUE:
+						powerImage.setImageResource(R.drawable.ic_color_blue);
+						break;
+					case NONE:
+						powerImage.setImageResource(R.drawable.ic_color_none);
+						break;
+				}
 			}
 			
 			final ProgressBar progressBar = (ProgressBar) convertView.findViewById(R.id.progressBar);			

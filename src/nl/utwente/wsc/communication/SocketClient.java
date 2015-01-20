@@ -107,24 +107,28 @@ public class SocketClient {
 			public void run() {
 				byte[] headerbuff = new byte[PacketHeader.HEADER_LENGTH];
 				stopped = false;
+				mainLoop:
 	            while (!stop) {
 	                do {
 	                    try {
 	                        headerbuff[0] = (byte) in.read();
 	                    } catch (IOException ex) {
 	                    	Log.e(this.toString(), "Connection dead");
-	                        stop = true;
-	                        disconnect();
-	                        continue;
+	                        stopped = true;
+		                	callBack.doneTask(sock.getInetAddress().getHostAddress(), 
+		                			ValueType.CONN_DEAD, null);
+	                        break mainLoop;
 	                    }
 	                    Tools.waitForMs(50);
 	                } while (!stop && headerbuff[0] == -1);
 	                try {
 	                    in.read(headerbuff, 1, headerbuff.length - 1);
 	                } catch (IOException ex) {
-	                	Log.e(this.toString(), "Connection dead");
-	                    stop = true;
-	                    continue;                  
+                    	Log.e(this.toString(), "Connection dead");
+                        stopped = true;
+	                	callBack.doneTask(sock.getInetAddress().getHostAddress(), 
+	                			ValueType.CONN_DEAD, null);
+                        break mainLoop;                
 	                }
 	                PacketHeader header = null;
 	                try {
@@ -141,14 +145,25 @@ public class SocketClient {
 	                    while (i < len && 
 	                            (i += in.read(receiverBuff, i, len - i)) != -1){}
 	                } catch (IOException ex) {
-	                    ex.printStackTrace();
-	                    stop = true;
-	                    continue;
-	                }
-	                Packet packet = new Packet(header, receiverBuff);
-	                if (new String(packet.getData()).equalsIgnoreCase("DEAD")) {
+                    	Log.e(this.toString(), "Connection dead");
+                        stopped = true;
 	                	callBack.doneTask(sock.getInetAddress().getHostAddress(), 
 	                			ValueType.CONN_DEAD, null);
+                        break mainLoop;
+	                }
+	                Packet packet = new Packet(header, receiverBuff);
+	                if (Packet.isCommandPacket(packet)) {
+		                if (new String(packet.getData()).equalsIgnoreCase("DEAD")) {
+	                    	Log.e(this.toString(), "Connection dead");
+	                        stopped = true;
+		                	callBack.doneTask(sock.getInetAddress().getHostAddress(), 
+		                			ValueType.CONN_DEAD, null);
+	                        break mainLoop;			                	
+		                } else {
+		                	callBack.doneTask(sock.getInetAddress().getHostAddress(), 
+		                			ValueType.VALUES_COLOR, new String(packet.getData()));		                	
+		                }
+		                continue;
 	                }
 	                synchronized (lock) {
 	                    receiveBuffer.add(packet);
@@ -163,7 +178,7 @@ public class SocketClient {
         thread.start();
     }
     
-    public Packet waitForPacket(int timeOut) {
+    public synchronized Packet waitForPacket(int timeOut) {
         Packet packet = null;
         Timer timer = new Timer(timeOut, true);
         while (!stop && !timer.hasExpired()) {
@@ -273,14 +288,14 @@ class AsyncCommunication extends AsyncTask<String, Integer, Object> {
 		        returnValue = Packet.isSuccesResponse(ans);	
 			} else if (type.equals(ValueType.TURN_OFF)) {
 				client.sendPacket(Packet.createCommandPacket(Command.turnOff()));
-		        Packet ans = client.waitForPacket(timeout);
+		        Packet ans = client.waitForPacket(timeout * 2);
 		        if (ans == null) {
 		        	returnValue = null;
 		        }
 		        returnValue = Packet.isSuccesResponse(ans);	
 			} else if (type.equals(ValueType.TURN_ON)) {
 				client.sendPacket(Packet.createCommandPacket(Command.turnOn()));
-		        Packet ans = client.waitForPacket(timeout);
+		        Packet ans = client.waitForPacket(timeout * 2);
 		        if (ans == null) {
 		        	returnValue = null;
 		        }
@@ -308,11 +323,18 @@ class AsyncCommunication extends AsyncTask<String, Integer, Object> {
 		        }
 		        returnValue = values;
 			} else if (type.equals(ValueType.VALUES_COLOR)) {
-				client.sendPacket(Packet.createCommandPacket(Command.getColor()));  
-		        Packet ans = client.waitForPacket(timeout);
-		        if (ans == null || !Packet.isResponsePacket(ans)) {
-		            return null;
-		        }    	
+				boolean color = false;
+				Packet ans = null;
+				while (!color) {
+					client.sendPacket(Packet.createCommandPacket(Command.getColor()));  
+			        ans = client.waitForPacket(timeout);
+			        if (ans == null || !Packet.isResponsePacket(ans)) {
+			            return null;
+			        }    
+			        if (!Packet.isSuccesResponse(ans)) {
+			        	color = true;
+			        }
+				}
 		        returnValue = ColorType.getType(new String(ans.getData()));
 			} else if (type.equals(ValueType.CONNECTING)) {
 				try {
