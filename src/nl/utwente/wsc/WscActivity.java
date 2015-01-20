@@ -59,6 +59,7 @@ public class WscActivity extends Activity implements SCMCallback {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.wsc, menu);
 		if (!createdMenu) {
+			createdMenu = true;
 			new Handler().post(new Runnable() {
 				@Override
 				public void run() {
@@ -66,7 +67,7 @@ public class WscActivity extends Activity implements SCMCallback {
 					tb.setOnClickListener(new OnClickListener() {					
 						@Override
 						public void onClick(View v) {
-							toggle_wsc();						
+							toggle_wsc();
 						}
 					});
 					updateList();
@@ -99,13 +100,17 @@ public class WscActivity extends Activity implements SCMCallback {
 	}
 
 	private void toggle_wsc() {
-		ToggleButton tb = (ToggleButton) findViewById(R.id.switchForActionBar);
-		ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressForActionBar);
-		tb.setEnabled(false);	
-		progressBar.setVisibility(View.VISIBLE);
-		wsc.setBusy(true);
-		manager.setDeviceState(wsc, tb.isChecked());	
-		invalidateOptionsMenu();
+		runOnUiThread(new Runnable() {
+			public void run() {
+				ToggleButton tb = (ToggleButton) findViewById(R.id.switchForActionBar);
+				ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressForActionBar);
+				tb.setEnabled(false);	
+				progressBar.setVisibility(View.VISIBLE);
+				wsc.setBusy(true);
+				manager.setDeviceState(wsc, tb.isChecked());	
+				invalidateOptionsMenu();
+			}
+		});
 	}
 
 	public void startSocketManager() {
@@ -237,12 +242,18 @@ public class WscActivity extends Activity implements SCMCallback {
 	
 	@Override
 	public void updateList() {
-		ToggleButton tb = (ToggleButton) findViewById(R.id.switchForActionBar);
-		ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressForActionBar);	
-		tb.setEnabled(wsc.isConnected() && !wsc.isBusy());
-		tb.setChecked(wsc.isTurnedOn());
-		progressBar.setVisibility(wsc.isBusy() ? View.VISIBLE : View.GONE);
-		//invalidateOptionsMenu();
+		final WSc wscRef = wsc; 
+		runOnUiThread(new Runnable() {		
+			@Override
+			public void run() {
+				ToggleButton tb = (ToggleButton) findViewById(R.id.switchForActionBar);
+				ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressForActionBar);	
+				tb.setEnabled(wscRef.isConnected() && !wscRef.isBusy());
+				tb.setChecked(wscRef.isTurnedOn());
+				progressBar.setVisibility(wscRef.isBusy() ? View.VISIBLE : View.GONE);
+				invalidateOptionsMenu();
+			}
+		});
 	}
 
 	@Override
