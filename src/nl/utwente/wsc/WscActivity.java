@@ -71,7 +71,7 @@ public class WscActivity extends Activity implements SCMCallback {
 	@Override
 	public void onBackPressed() {
 		super.onBackPressed();
-		overridePendingTransition(android.R.anim.fade_out, android.R.anim.fade_in);
+		//overridePendingTransition(android.R.anim.fade_out, android.R.anim.fade_in);
 	}
 
 	@Override
@@ -91,7 +91,7 @@ public class WscActivity extends Activity implements SCMCallback {
 			return true;
 		case android.R.id.home:
 			NavUtils.navigateUpFromSameTask(this);
-			overridePendingTransition(android.R.anim.fade_out, android.R.anim.fade_in);
+			//overridePendingTransition(android.R.anim.fade_out, android.R.anim.fade_in);
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -148,7 +148,7 @@ public class WscActivity extends Activity implements SCMCallback {
 		Toast.makeText(this, "WSc "+ wsc.getName() +" removed", Toast.LENGTH_SHORT).show();
 		manager.save();
 		finish();
-		overridePendingTransition(android.R.anim.fade_out, android.R.anim.fade_in);
+		//overridePendingTransition(android.R.anim.fade_out, android.R.anim.fade_in);
 	}
 
 	private void showEditWscDialog() {
