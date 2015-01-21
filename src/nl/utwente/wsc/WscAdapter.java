@@ -6,15 +6,17 @@ import nl.utwente.wsc.models.WSc;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.support.v7.widget.SwitchCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
 public class WscAdapter extends ArrayAdapter<WSc> {
 	
@@ -45,7 +47,7 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 		if(wsc != null) {
 			
 			final TextView name = (TextView) convertView.findViewById(R.id.wsc_name);
-			name.setText(wsc.toString());
+			name.setText(wsc.getName());
 			name.setTextColor(!wsc.isConnected() ? Color.GRAY : Color.BLACK);
 			name.setOnClickListener(new OnClickListener() {
 				
@@ -59,15 +61,14 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 				}
 			});
 			
-			final ToggleButton toggleButton = (ToggleButton) convertView.findViewById(R.id.toggleButton);
-			toggleButton.setChecked(wsc.isTurnedOn());
-			toggleButton.setOnClickListener(new OnClickListener() {
+			final SwitchCompat deviceSwitch = (SwitchCompat) convertView.findViewById(R.id.device_switch);
+			deviceSwitch.setChecked(wsc.isTurnedOn());
+			deviceSwitch.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 				
 				@Override
-				public void onClick(View v) {
-					boolean turnOn = toggleButton.isChecked();
-					manager.setDeviceState(wsc, turnOn);
-					wsc.setTurnedOn(turnOn);
+				public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+					manager.setDeviceState(wsc, isChecked);
+					wsc.setTurnedOn(isChecked);
 					mainActivity.updateList();
 				}
 			});
@@ -98,9 +99,9 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 			final ProgressBar progressBar = (ProgressBar) convertView.findViewById(R.id.progressBar);			
 			if(wsc.isBusy()) {
 				progressBar.setVisibility(View.VISIBLE);
-				toggleButton.setEnabled(false);
+				deviceSwitch.setEnabled(false);
 			} else {
-				toggleButton.setEnabled(wsc.isConnected());
+				deviceSwitch.setEnabled(wsc.isConnected());
 				progressBar.setVisibility(View.GONE);
 			}
 			

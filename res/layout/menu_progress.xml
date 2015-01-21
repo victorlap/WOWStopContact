@@ -3,10 +3,11 @@
     android:layout_height="match_parent"
     android:orientation="horizontal" >
 
-    <ToggleButton
-        android:id="@+id/switchForActionBar"
+    <ProgressBar
+        android:id="@+id/progressForActionBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:enabled="false" />
+        android:enabled="false"
+        android:visibility="gone" />
 
 </RelativeLayout>

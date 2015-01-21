@@ -7,13 +7,13 @@ import java.util.Random;
 import nl.utwente.wsc.SocketClientManager.SCMCallback;
 import nl.utwente.wsc.models.WSc;
 import nl.utwente.wsc.utils.Tools;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.NavUtils;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,7 +27,7 @@ import android.widget.ToggleButton;
 
 import com.jjoe64.graphview.GraphView;
 
-public class WscActivity extends Activity implements SCMCallback {
+public class WscActivity extends ActionBarActivity implements SCMCallback {
 
 	private WSc wsc;
 	private SocketClientManager manager;
@@ -38,8 +38,8 @@ public class WscActivity extends Activity implements SCMCallback {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_wsc);
 
-		getActionBar().setDisplayHomeAsUpEnabled(true);
-		getActionBar().setHomeButtonEnabled(true);
+		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		getSupportActionBar().setHomeButtonEnabled(true);
 		
 		Intent i = getIntent();
 		wsc = (WSc) i.getSerializableExtra(MainActivity.EXTRA_WSC);
@@ -64,12 +64,14 @@ public class WscActivity extends Activity implements SCMCallback {
 				@Override
 				public void run() {
 					ToggleButton tb = (ToggleButton) findViewById(R.id.switchForActionBar);
-					tb.setOnClickListener(new OnClickListener() {					
-						@Override
-						public void onClick(View v) {
-							toggle_wsc();
-						}
-					});
+					if(tb != null) {
+						tb.setOnClickListener(new OnClickListener() {					
+							@Override
+							public void onClick(View v) {
+								toggle_wsc();
+							}
+						});
+					}
 				}
 			});
 		}
