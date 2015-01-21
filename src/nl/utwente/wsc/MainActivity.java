@@ -31,6 +31,8 @@ import com.jjoe64.graphview.GraphView;
 
 
 public class MainActivity extends ListActivity implements SCMCallback {
+	
+	private boolean devMode = false;
 
 	public static final int    DEFAULT_PORTNUMBER = 7331;
 	public static final String EXTRA_WSC = "extra_wsc";
@@ -53,6 +55,16 @@ public class MainActivity extends ListActivity implements SCMCallback {
 		setContentView(R.layout.activity_main);
 		//BASE_IP = getBaseIP();        
 		startSocketManager();
+		if (Tools.updated != null) {
+			manager.updateDevice(Tools.updated);
+			manager.save();
+			Tools.updated = null;
+		}
+		if (Tools.removed != null) {
+			manager.removeDevice(Tools.removed.getHostname(), false);
+			manager.save();
+			Tools.removed = null;
+		}		
 		list = manager.getDevices();
 		adapter = new WscAdapter(this, list, manager, this);
 
@@ -169,7 +181,7 @@ public class MainActivity extends ListActivity implements SCMCallback {
 
 	private void showAddWscDialog() {
 		AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-		dialog.setTitle("Add WSc");
+		dialog.setTitle("Add Device");
 
 		LinearLayout layout = new LinearLayout(this);
 		layout.setOrientation(LinearLayout.VERTICAL);
@@ -180,15 +192,18 @@ public class MainActivity extends ListActivity implements SCMCallback {
 		layout.addView(nameBox);
 
 		final EditText hostnameBox = new EditText(this);
-		hostnameBox.setHint("Hostname");
+		hostnameBox.setHint("IP-address");
 		layout.addView(hostnameBox);
 
-		final EditText portBox = new EditText(this);
-		portBox.setHint("Port");
-		portBox.setText(String.valueOf(DEFAULT_PORTNUMBER));
-		portBox.setInputType(EditorInfo.TYPE_NUMBER_FLAG_DECIMAL);
-		layout.addView(portBox);
-
+		EditText tempPortBox = null;
+		if (devMode) {
+			tempPortBox = new EditText(this);
+			tempPortBox.setHint("Port");
+			tempPortBox.setText(String.valueOf(DEFAULT_PORTNUMBER));
+			tempPortBox.setInputType(EditorInfo.TYPE_NUMBER_FLAG_DECIMAL);
+			layout.addView(tempPortBox);
+		}
+		final EditText portBox = tempPortBox;
 		dialog.setView(layout);
 
 		dialog.setPositiveButton("Add", new OnClickListener() {		
@@ -196,11 +211,17 @@ public class MainActivity extends ListActivity implements SCMCallback {
 			public void onClick(DialogInterface dialog, int which) {
 				String name = nameBox.getText().toString();
 				String host = hostnameBox.getText().toString();
-
-				int port = -1;
-				try {
-					port = Integer.parseInt(portBox.getText().toString());
-				} catch (NumberFormatException e) {}
+				
+				int port;
+				if (devMode) {
+					port = -1;
+					try {
+						port = Integer.parseInt(portBox.getText().toString());
+					} catch (NumberFormatException e) {}
+				} else {
+					port = DEFAULT_PORTNUMBER;
+				}			
+				
 				if(port != -1 && name != null && !name.equals("") && host != null && !host.equals("")) {
 
 					WSc wsc = new WSc(nameBox.getText().toString(), hostnameBox.getText().toString(), port);
@@ -271,7 +292,7 @@ public class MainActivity extends ListActivity implements SCMCallback {
 		Random r = new Random();
 		DecimalFormat f = new DecimalFormat("#");
 		if(n > 0) {
-			tv1.setText("Powerd on for: "+ f.format(rand(n*2, n*12, r)) +" hours");
+			tv1.setText("Powered on for: "+ f.format(rand(n*2, n*12, r)) +" hours");
 			tv2.setText("Current power draw: "+ f.format(rand(n*10, n*50, r)) +"W");
 		} else {
 			tv1.setText("There are no devices currently on");

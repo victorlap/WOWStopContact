@@ -70,7 +70,6 @@ public class WscActivity extends Activity implements SCMCallback {
 							toggle_wsc();
 						}
 					});
-					updateList();
 				}
 			});
 		}
@@ -156,15 +155,17 @@ public class WscActivity extends Activity implements SCMCallback {
 	}
 
 	private void remove() {
-		manager.removeDevice(wsc.getHostname());
+		manager.removeDevice(wsc.getHostname(), true);
 		manager.stop();
+		Tools.removed = wsc;
 		Toast.makeText(this, "WSc "+ wsc.getName() +" removed", Toast.LENGTH_SHORT).show();
-		finish();
+		manager.pauze();
+		NavUtils.navigateUpFromSameTask(this);
 	}
 
 	private void showEditWscDialog() {
 		AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-		dialog.setTitle("Edit WSc");
+		dialog.setTitle("Edit device");
 
 		LinearLayout layout = new LinearLayout(this);
 		layout.setOrientation(LinearLayout.VERTICAL);
@@ -187,6 +188,7 @@ public class WscActivity extends Activity implements SCMCallback {
 					setTitle(wsc.getName());
 					manager.updateDevice(wsc);
 					manager.save();
+					Tools.updated = wsc;
 					dialog.dismiss();
 				} else {
 					Toast.makeText(getApplication(), "Please fill in a correct name", Toast.LENGTH_SHORT).show();
@@ -243,15 +245,23 @@ public class WscActivity extends Activity implements SCMCallback {
 	@Override
 	public void updateList() {
 		final WSc wscRef = wsc; 
+		if (wsc == null) {
+			return;
+		}
 		runOnUiThread(new Runnable() {		
 			@Override
 			public void run() {
 				ToggleButton tb = (ToggleButton) findViewById(R.id.switchForActionBar);
-				ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressForActionBar);	
-				tb.setEnabled(wscRef.isConnected() && !wscRef.isBusy());
-				tb.setChecked(wscRef.isTurnedOn());
-				progressBar.setVisibility(wscRef.isBusy() ? View.VISIBLE : View.GONE);
-				invalidateOptionsMenu();
+				ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressForActionBar);
+				try {
+					tb.setEnabled(wscRef.isConnected() && !wscRef.isBusy());
+					tb.setChecked(wscRef.isTurnedOn());
+					progressBar.setVisibility(wscRef.isBusy() ? View.VISIBLE : View.GONE);
+					invalidateOptionsMenu();
+				} catch (Exception e) {
+					@SuppressWarnings("unused")
+					int i = 0;
+				}
 			}
 		});
 	}

@@ -88,6 +88,9 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	@Override
 	public void doneTask(String address, ValueType type, Object value) {
 		WSc wsc = getKey(address);
+		if (wsc == null) {
+			return;
+		}
 		boolean succes = false;
 		boolean done = true;
 		if (value == null) {
@@ -116,7 +119,13 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 			}
 		} else if (type.equals(ValueType.VALUES_COLOR)) {
 			succes = true;
-			wsc.setColor(ColorType.getType(value.toString()));
+			String valuee = value.toString();
+			if (value != null) {
+				ColorType color = ColorType.getType(valuee);
+				if (color != null) {
+					wsc.setColor(color);
+				}
+			}
 		} else if (type.equals(ValueType.CONNECTING)) {
 			if (succes) {
 				done = false;
@@ -185,18 +194,20 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 		}
 		return true;
 	}
-	public void removeDevice(WSc wsc) {
+	public void removeDevice(WSc wsc, boolean updateList) {
 		clientList.get(wsc).disconnect();
 		clientList.remove(wsc);	
-		callback.updateList();
+		if (updateList) {
+			callback.updateList();
+		}
 	}
 
-	public void removeDevice(String address) {
-		removeDevice(getKey(address));
+	public void removeDevice(String address, boolean updateList) {
+		removeDevice(getKey(address), updateList);
 	}
 
-	public void removeDevice(int index) {
-		removeDevice(getKey(index));
+	public void removeDevice(int index, boolean updateList) {
+		removeDevice(getKey(index), updateList);
 	}
 
 	/**
