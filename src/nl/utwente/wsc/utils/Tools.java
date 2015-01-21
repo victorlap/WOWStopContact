@@ -2,8 +2,10 @@ package nl.utwente.wsc.utils;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Random;
 
+import nl.utwente.wsc.models.WSc;
 import android.content.Context;
 
 import com.jjoe64.graphview.DefaultLabelFormatter;
@@ -18,6 +20,9 @@ import com.jjoe64.graphview.series.LineGraphSeries;
  * @author rvemous
  */
 public class Tools {
+	
+	public static WSc updated;
+	public static WSc removed;
     
     /**
      * Waits for the specified time in milliseconds.<br>

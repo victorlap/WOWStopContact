@@ -51,7 +51,7 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 				
 				@Override
 				public void onClick(View v) {
-					if (!wsc.isBusy()) {
+					if (!wsc.isConnected() || !wsc.isBusy()) {
 						Intent i = new Intent(mainActivity, WscActivity.class);
 						i.putExtra(MainActivity.EXTRA_WSC, wsc);
 						mainActivity.startActivity(i);
@@ -81,7 +81,7 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 						powerImage.setImageResource(R.drawable.ic_color_red);
 						break;
 					case ORANGE:
-						powerImage.setImageResource(R.drawable.ic_color_orange);
+						powerImage.setImageResource(R.drawable.ic_color_yellow);
 						break;
 					case GREEN:
 						powerImage.setImageResource(R.drawable.ic_color_green);

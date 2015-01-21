@@ -3,6 +3,7 @@ package nl.utwente.wsc.communication;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -45,6 +46,7 @@ public class SocketClient {
     private boolean stop = true;
     private boolean stopped = false;
     
+    protected InetAddress address;
     protected SSLSocket sock;
     protected SSLContext sslContext;
     
@@ -74,6 +76,7 @@ public class SocketClient {
     }
     
     protected void finishConnecting() throws IOException {
+    	address = sock.getInetAddress();
         in = new BufferedInputStream(sock.getInputStream());
         out = new BufferedOutputStream(sock.getOutputStream());
         receiveBuffer = new LinkedList<Packet>();
@@ -115,7 +118,7 @@ public class SocketClient {
 	                    } catch (IOException ex) {
 	                    	Log.e(this.toString(), "Connection dead");
 	                        stopped = true;
-		                	callBack.doneTask(sock.getInetAddress().getHostAddress(), 
+		                	callBack.doneTask(address.getHostAddress(), 
 		                			ValueType.CONN_DEAD, null);
 	                        break mainLoop;
 	                    }
@@ -126,7 +129,7 @@ public class SocketClient {
 	                } catch (IOException ex) {
                     	Log.e(this.toString(), "Connection dead");
                         stopped = true;
-	                	callBack.doneTask(sock.getInetAddress().getHostAddress(), 
+	                	callBack.doneTask(address.getHostAddress(), 
 	                			ValueType.CONN_DEAD, null);
                         break mainLoop;                
 	                }
@@ -147,7 +150,7 @@ public class SocketClient {
 	                } catch (IOException ex) {
                     	Log.e(this.toString(), "Connection dead");
                         stopped = true;
-	                	callBack.doneTask(sock.getInetAddress().getHostAddress(), 
+	                	callBack.doneTask(address.getHostAddress(), 
 	                			ValueType.CONN_DEAD, null);
                         break mainLoop;
 	                }
@@ -156,11 +159,11 @@ public class SocketClient {
 		                if (new String(packet.getData()).equalsIgnoreCase("DEAD")) {
 	                    	Log.e(this.toString(), "Connection dead");
 	                        stopped = true;
-		                	callBack.doneTask(sock.getInetAddress().getHostAddress(), 
+		                	callBack.doneTask(address.getHostAddress(), 
 		                			ValueType.CONN_DEAD, null);
 	                        break mainLoop;			                	
 		                } else {
-		                	callBack.doneTask(sock.getInetAddress().getHostAddress(), 
+		                	callBack.doneTask(address.getHostAddress(), 
 		                			ValueType.VALUES_COLOR, new String(packet.getData()));		                	
 		                }
 		                continue;
@@ -380,7 +383,7 @@ class AsyncCommunication extends AsyncTask<String, Integer, Object> {
 			return returnValue;
 		}
 		try {
-			client.callBack.doneTask(client.sock.getInetAddress().getHostAddress(), 
+			client.callBack.doneTask(client.address.getHostAddress(), 
 					type, returnValue);
 		} catch (Exception e) {
 			e.printStackTrace();
