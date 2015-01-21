@@ -12,17 +12,18 @@ import nl.utwente.wsc.communication.SocketClient;
 import nl.utwente.wsc.models.WSc;
 import nl.utwente.wsc.utils.Tools;
 import android.app.AlertDialog;
-import android.app.ListActivity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -30,7 +31,7 @@ import android.widget.ToggleButton;
 import com.jjoe64.graphview.GraphView;
 
 
-public class MainActivity extends ListActivity implements SCMCallback {
+public class MainActivity extends ActionBarActivity implements SCMCallback {
 	
 	private boolean devMode = false;
 
@@ -68,7 +69,7 @@ public class MainActivity extends ListActivity implements SCMCallback {
 		list = manager.getDevices();
 		adapter = new WscAdapter(this, list, manager, this);
 
-		setListAdapter(adapter);
+		((ListView) findViewById(android.R.id.list)).setAdapter(adapter);
 
 		toggle_devices = (ToggleButton) findViewById(R.id.allDevicesToggle);
 		toggle_devices.setOnClickListener(new View.OnClickListener() {

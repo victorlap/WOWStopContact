@@ -1,26 +1,26 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:wsc="http://schemas.android.com/apk/res-auto"
     tools:context="nl.utwente.wowstopcontact.MainActivity" >
-    
     <item
         android:id="@+id/view_progress"
         android:actionLayout="@layout/menu_progress"
-        android:showAsAction="always"
+        wsc:showAsAction="always"
         android:title=""/>
     <item
         android:id="@+id/action_toggle_wsc"
         android:actionLayout="@layout/menu_toggle"
-        android:showAsAction="always"
+        wsc:showAsAction="always"
         android:title=""/>
     <item
         android:id="@+id/action_edit_wsc"
         android:icon="@drawable/ic_menu_edit"
-        android:showAsAction="ifRoom"
+        wsc:showAsAction="ifRoom"
         android:title="@string/edit_wsc"/>
     <item
         android:id="@+id/action_remove_wsc"
         android:icon="@drawable/ic_menu_delete"
-        android:showAsAction="ifRoom"
+        wsc:showAsAction="ifRoom"
         android:title="@string/remove_wsc"/>
 
 </menu>

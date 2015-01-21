@@ -2,7 +2,6 @@ package nl.utwente.wsc.utils;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.List;
 import java.util.Random;
 
 import nl.utwente.wsc.models.WSc;
@@ -88,8 +87,8 @@ public class Tools {
     	DataPoint[] dps = new DataPoint[50];
 		Random rand = new Random();
 		 Calendar calendar = Calendar.getInstance();
-		for(int i = 0; i < dps.length; i++) {
-			calendar.add(Calendar.MINUTE, 5);
+		for(int i = dps.length-1; i >= 0; i--) {
+			calendar.add(Calendar.MINUTE, -5);
 			double y = rand.nextInt((max - min) + 1) + min;
 			dps[i] = new DataPoint(calendar.getTime(), y);
 		}

@@ -1,17 +1,18 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:wsc="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="nl.utwente.wowstopcontact.MainActivity" >
     
     <item 
         android:id="@+id/action_refresh"
         android:icon="@drawable/ic_menu_refresh"
-        android:showAsAction="always"
+        wsc:showAsAction="always"
         android:title="@string/refresh"/>
 
     <item
         android:id="@+id/action_add_wsc"
         android:icon="@drawable/ic_menu_add"
-        android:showAsAction="ifRoom"
+        wsc:showAsAction="ifRoom"
         android:title="@string/add_wsc"/>
 
 </menu>
