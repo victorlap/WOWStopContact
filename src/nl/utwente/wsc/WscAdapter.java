@@ -7,13 +7,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.support.v7.widget.SwitchCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -63,15 +64,29 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 			
 			final SwitchCompat deviceSwitch = (SwitchCompat) convertView.findViewById(R.id.device_switch);
 			deviceSwitch.setChecked(wsc.isTurnedOn());
-			deviceSwitch.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			deviceSwitch.setOnClickListener(new OnClickListener() {
 				
 				@Override
-				public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-					manager.setDeviceState(wsc, isChecked);
-					wsc.setTurnedOn(isChecked);
+				public void onClick(View v) {
+					boolean turnOn = deviceSwitch.isChecked();
+					Log.v("WSC", "Name: "+ wsc.getName() +" isChecked: "+ turnOn);
+					manager.setDeviceState(wsc, turnOn);
+					wsc.setTurnedOn(turnOn);
 					mainActivity.updateList();
 				}
 			});
+			/*deviceSwitch.setOnTouchListener(new OnTouchListener() {
+				
+				@Override
+				public boolean onTouch(View v, MotionEvent event) {
+					boolean turnOn = deviceSwitch.isChecked();
+					Log.v("WSC", "Name: "+ wsc.getName() +" isChecked: "+ turnOn);
+					manager.setDeviceState(wsc, turnOn);
+					wsc.setTurnedOn(turnOn);
+					mainActivity.updateList();
+					return false;
+				}
+			});*/
 			
 			final ImageView powerImage = (ImageView) convertView.findViewById(R.id.powerImage);
 			if (!wsc.isTurnedOn()) {
