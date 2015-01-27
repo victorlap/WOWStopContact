@@ -117,7 +117,7 @@ public class SocketClient {
 	                        headerbuff[0] = (byte) in.read();
 	                    } catch (IOException ex) {
 	                    	Log.e(this.toString(), "Connection dead");
-	                        stopped = true;
+	                        stop = true;
 		                	callBack.doneTask(address.getHostAddress(), 
 		                			ValueType.CONN_DEAD, null);
 	                        break mainLoop;
@@ -128,7 +128,7 @@ public class SocketClient {
 	                    in.read(headerbuff, 1, headerbuff.length - 1);
 	                } catch (IOException ex) {
                     	Log.e(this.toString(), "Connection dead");
-                        stopped = true;
+                        stop = true;
 	                	callBack.doneTask(address.getHostAddress(), 
 	                			ValueType.CONN_DEAD, null);
                         break mainLoop;                
@@ -149,27 +149,23 @@ public class SocketClient {
 	                            (i += in.read(receiverBuff, i, len - i)) != -1){}
 	                } catch (IOException ex) {
                     	Log.e(this.toString(), "Connection dead");
-                        stopped = true;
+                        stop = true;
 	                	callBack.doneTask(address.getHostAddress(), 
 	                			ValueType.CONN_DEAD, null);
                         break mainLoop;
 	                }
 	                Packet packet = new Packet(header, receiverBuff);
 	                if (Packet.isCommandPacket(packet)) {
-		                if (new String(packet.getData()).equalsIgnoreCase("DEAD")) {
-	                    	Log.e(this.toString(), "Connection dead");
-	                        stopped = true;
-		                	callBack.doneTask(address.getHostAddress(), 
-		                			ValueType.CONN_DEAD, null);
-	                        break mainLoop;			                	
-		                } else {
-		                	callBack.doneTask(address.getHostAddress(), 
-		                			ValueType.VALUES_COLOR, new String(packet.getData()));		                	
+	                	try {
+							commandHandler(new Command(new String(packet.getData())));
+						} catch (InvalidPacketException e) {
+							e.printStackTrace();
+							continue;
+						}
+	                } else {
+		                synchronized (lock) {
+		                    receiveBuffer.add(packet);
 		                }
-		                continue;
-	                }
-	                synchronized (lock) {
-	                    receiveBuffer.add(packet);
 	                }
 	                Log.d(this.toString(), "Got packet: " + packet.toString());
 	            }
@@ -179,6 +175,24 @@ public class SocketClient {
         thread.setName("Packet-receiver");
         thread.setDaemon(true);
         thread.start();
+    }
+    
+    private void commandHandler(Command command) {
+        if (command.getCommand().equalsIgnoreCase("DEAD")) {
+        	Log.e(this.toString(), "Connection dead");
+            stop = true;
+        	callBack.doneTask(address.getHostAddress(), 
+        			ValueType.CONN_DEAD, null);		
+        } else if (command.getCommand().equalsIgnoreCase("setColor")) {
+        	callBack.doneTask(address.getHostAddress(), 
+        			ValueType.VALUES_COLOR, command.getArguments()[0]);
+        } else if (command.getCommand().equalsIgnoreCase("turnOn")) {
+        	callBack.doneTask(address.getHostAddress(), 
+        			ValueType.TURN_ON, true);	
+        } else if (command.getCommand().equalsIgnoreCase("turnOff")) {
+        	callBack.doneTask(address.getHostAddress(), 
+        			ValueType.TURN_OFF, true);	
+        }
     }
     
     public synchronized Packet waitForPacket(int timeOut) {

@@ -119,7 +119,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 		} else if (type.equals(ValueType.VALUES_COLOR)) {
 			succes = true;
 			String valuee = value.toString();
-			if (value != null) {
+			if (valuee != null) {
 				ColorType color = ColorType.getType(valuee);
 				if (color != null) {
 					wsc.setColor(color);
