@@ -7,7 +7,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -230,8 +230,8 @@ public class SocketClient {
     	return performAsyncAction(ValueType.TURN_ON);
     }
     
-    public synchronized boolean getPowerValues() {
-    	return performAsyncAction(ValueType.VALUES_POWER);
+    public synchronized boolean getPowerValues(long fromDate) {
+    	return performAsyncAction(ValueType.VALUES_POWER, true, new String[]{fromDate+""});
     }
     
     public synchronized boolean getSocketColor() { 
@@ -314,31 +314,31 @@ class AsyncCommunication extends AsyncTask<String, Integer, Object> {
 		        returnValue = Packet.isSuccesResponse(ans);	
 			} else if (type.equals(ValueType.TURN_OFF)) {
 				client.sendPacket(Packet.createCommandPacket(Command.turnOff()));
-		        Packet ans = client.waitForPacket(timeout * 2);
+		        Packet ans = client.waitForPacket(timeout);
 		        if (ans == null) {
 		        	returnValue = null;
 		        }
 		        returnValue = Packet.isSuccesResponse(ans);	
 			} else if (type.equals(ValueType.TURN_ON)) {
 				client.sendPacket(Packet.createCommandPacket(Command.turnOn()));
-		        Packet ans = client.waitForPacket(timeout * 2);
+		        Packet ans = client.waitForPacket(timeout);
 		        if (ans == null) {
 		        	returnValue = null;
 		        }
 		        returnValue = Packet.isSuccesResponse(ans);	
 			} else if (type.equals(ValueType.VALUES_POWER)) {
-				client.sendPacket(Packet.createCommandPacket(Command.getValues()));  
-		        Packet ans = client.waitForPacket(timeout * 2);
+				client.sendPacket(Packet.createCommandPacket(Command.getValues(Long.parseLong(params[1]))));  
+		        Packet ans = client.waitForPacket(timeout*4);
 		        if (ans == null || !Packet.isDataPacket(ans)) {
 		            return null;
 		        }
 		        String data = new String(ans.getData());
 		        String[] valuePairs = data.split(";");
-		        Map<DateTime, Integer> values = new HashMap<DateTime, Integer>();
+		        Map<DateTime, Double> values = new LinkedHashMap<DateTime, Double>();
 		        for (String valuePair : valuePairs) {
 		        	String[] splitted = valuePair.split(",");
 		        	try {
-		        		values.put(new DateTime(Long.parseLong(splitted[0])), Integer.parseInt(splitted[1]));
+		        		values.put(new DateTime(Long.parseLong(splitted[0])), Double.parseDouble(splitted[1]));
 		        	} catch (Exception e) {
 		        		Log.e(this.toString(), "invalid value pair: " + valuePair);
 		        	}

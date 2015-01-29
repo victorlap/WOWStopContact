@@ -213,7 +213,7 @@ public class WscActivity extends ActionBarActivity implements SCMCallback {
 			ProgressBar pb = (ProgressBar) findViewById(R.id.progress);
 			pb.setVisibility(View.GONE);
 			GraphView graph = (GraphView) findViewById(R.id.graph);
-			Tools.buildGraph(10, 50, this, graph, wsc.isTurnedOn());
+			//Tools.buildGraph(10, 50, this, graph, wsc.isTurnedOn());
 	}
 	
 	private void buildText() {

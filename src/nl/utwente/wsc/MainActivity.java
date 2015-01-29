@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Random;
 
+import org.joda.time.DateTime;
+
 import nl.utwente.wsc.SocketClientManager.SCMCallback;
 import nl.utwente.wsc.communication.SocketClient;
 import nl.utwente.wsc.models.WSc;
@@ -37,6 +39,7 @@ public class MainActivity extends ActionBarActivity implements SCMCallback {
 
 	public static final int    DEFAULT_PORTNUMBER = 7331;
 	public static final String EXTRA_WSC = "extra_wsc";
+	public static final boolean FAKE_DATA = false;
 
 	public static String BASE_IP;
 
@@ -48,7 +51,6 @@ public class MainActivity extends ActionBarActivity implements SCMCallback {
 	private WscAdapter adapter;
 
 	private boolean wasPaused;
-	private boolean deactivated = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -129,7 +131,7 @@ public class MainActivity extends ActionBarActivity implements SCMCallback {
     	//TODOmanager.getDevicesValues();
 		switch(item.getItemId()) {
 		case R.id.action_refresh:
-    			refreshDevices();
+    		refreshDevices();
 			return true;
 		case R.id.action_add_wsc:
 			showAddWscDialog();
@@ -146,6 +148,8 @@ public class MainActivity extends ActionBarActivity implements SCMCallback {
 			if (entry.getKey().isConnected()) {
 				entry.getValue().socketIsOn();
 				entry.getValue().getSocketColor();
+				entry.getValue().getPowerValues(
+						entry.getKey().getLastSampleTime());
 			} else {
 				try {
 					entry.getValue().connect(entry.getKey());
@@ -279,32 +283,67 @@ public class MainActivity extends ActionBarActivity implements SCMCallback {
 				}
 			}
 		});
-		int n = manager.getDevices().size();
-		Tools.buildGraph(10*n, 50*n, this, graph, true);
-		buildText(n);
+		List<WSc> wscs = manager.getDevices();
+		int n = wscs.size();
+		if (FAKE_DATA) {
+			Tools.buildGraphRandom(10*n, 50*n, this, graph, true);
+			buildFakeText(n);
+		} else {
+			Tools.buildGraphReal(this, graph, manager.getDevices(), 20);
+			buildRealText(wscs);
+		}
+	}
+	
+	private void buildRealText(List<WSc> wscs) {	
+		TextView tv1 = (TextView) findViewById(R.id.textView1);
+		TextView tv2 = (TextView) findViewById(R.id.textView2);
+		TextView tv3 = (TextView) findViewById(R.id.textView3);
+		TextView tv4 = (TextView) findViewById(R.id.textView4);
+		
+		double currentPowerDraw = 0;
+		double dailyUsage = 0;
+		double yearlyEstimate = 0;
+		DateTime now = DateTime.now();
+		for (WSc wsc : wscs) {
+			currentPowerDraw += wsc.getCurrentPowerDraw();
+			dailyUsage += wsc.getDailyUsage(now);
+			yearlyEstimate += wsc.getYearlyEstimate(now);
+		}
+
+		DecimalFormat f = new DecimalFormat("#.##");
+		if(wscs.size() > 0) {
+			tv2.setText("Current power draw: "+ f.format(currentPowerDraw) + " watt");
+		} else {
+			tv1.setText("There are no devices currently on");
+			tv2.setText("Current power draw: 0.00 watt");
+		}
+		f = new DecimalFormat("0.000");
+		DecimalFormat eu = new DecimalFormat("0.00");
+		tv3.setText("Daily power draw: "+ f.format(dailyUsage) +" kWh ~ €"+ eu.format(dailyUsage*0.23));
+		f = new DecimalFormat("#");
+		tv4.setText("Yearly estimate: "+ f.format(yearlyEstimate) +" kWh ~ €"+ eu.format(yearlyEstimate*0.23));
 	}
 
-	private void buildText(int n) {
+	private void buildFakeText(int n) {
 		TextView tv1 = (TextView) findViewById(R.id.textView1);
 		TextView tv2 = (TextView) findViewById(R.id.textView2);
 		TextView tv3 = (TextView) findViewById(R.id.textView3);
 		TextView tv4 = (TextView) findViewById(R.id.textView4);
 
+		DecimalFormat f = new DecimalFormat("#.#");
 		Random r = new Random();
-		DecimalFormat f = new DecimalFormat("#");
 		if(n > 0) {
-			tv1.setText("Powered on for: "+ f.format(rand(n*2, n*12, r)) +" hours");
-			tv2.setText("Current power draw: "+ f.format(rand(n*10, n*50, r)) +"W");
+			tv2.setText("Current power draw: "+ f.format(rand(n*10, n*50, r)) + " watt");
 		} else {
 			tv1.setText("There are no devices currently on");
-			tv2.setText("Current power draw: None");
+			tv2.setText("Current power draw: 0.00 watt");
 		}
 		double w = rand(0, n*1, r);
-		f = new DecimalFormat("#.#");
+		f = new DecimalFormat("#.###");
 		DecimalFormat eu = new DecimalFormat("0.00");
-		tv3.setText("Daily power draw: "+ f.format(w) +"kWh ~ €"+ eu.format(w*0.23));
+		tv3.setText("Daily power draw: "+ f.format(w) +" kWh ~ €"+ eu.format(w*0.23));
 		f = new DecimalFormat("#");
-		tv4.setText("Yearly estimate: "+ f.format(w*365) +"kWh ~ €"+ eu.format(w*365*0.23));
+		tv4.setText("Yearly estimate: "+ f.format(w*365) +" kWh ~ €"+ eu.format(w*365*0.23));
 
 	}
 

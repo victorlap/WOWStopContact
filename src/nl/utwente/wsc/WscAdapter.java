@@ -15,6 +15,8 @@ import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -63,18 +65,20 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 			});
 			
 			final SwitchCompat deviceSwitch = (SwitchCompat) convertView.findViewById(R.id.device_switch);
+			deviceSwitch.setOnCheckedChangeListener(null);
 			deviceSwitch.setChecked(wsc.isTurnedOn());
-			deviceSwitch.setOnClickListener(new OnClickListener() {
+			deviceSwitch.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 				
 				@Override
-				public void onClick(View v) {
+				public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 					boolean turnOn = deviceSwitch.isChecked();
 					Log.v("WSC", "Name: "+ wsc.getName() +" isChecked: "+ turnOn);
 					manager.setDeviceState(wsc, turnOn);
 					wsc.setTurnedOn(turnOn);
-					mainActivity.updateList();
+					mainActivity.updateList();				
 				}
 			});
+			
 			/*deviceSwitch.setOnTouchListener(new OnTouchListener() {
 				
 				@Override

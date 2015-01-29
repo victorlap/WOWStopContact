@@ -108,10 +108,11 @@ public class Command {
     /**
      * Gets the power usage values.
      * 
+     * @param fromDate the date from which to get data (may be 0)
      * @return the command
      */    
-    public static Command getValues() {
-        return new Command("getValues", "");
+    public static Command getValues(long fromDate) {
+        return new Command("getValues", fromDate+"");
     }
 
     /**

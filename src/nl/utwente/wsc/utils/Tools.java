@@ -2,9 +2,15 @@ package nl.utwente.wsc.utils;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Random;
+import java.util.TreeMap;
 
 import nl.utwente.wsc.models.WSc;
+
+import org.joda.time.DateTime;
+
 import android.content.Context;
 
 import com.jjoe64.graphview.DefaultLabelFormatter;
@@ -46,7 +52,87 @@ public class Tools {
         while (System.nanoTime() - currTime <= sleepTime);
     }
     
-    public static void buildGraph(int min, int max, final Context context, GraphView graph, boolean turnedOn) {
+    public static void buildGraphReal(final Context context, GraphView graph, List<WSc> wscs, int amountOfDataPoints) {  
+    	// first pile up the one day data from all WSc's, than split it in a number of data points
+		TreeMap<DateTime, Double> tempHist = new TreeMap<DateTime, Double>();
+    	DateTime now = DateTime.now();
+    	for (WSc wsc : wscs) {
+    		LinkedHashMap<DateTime, Double> histOfDay = wsc.getHistoryArrayOfDay(now);
+    		if (histOfDay != null) {
+    			tempHist.putAll(wsc.getHistoryArrayOfDay(now));
+    		}
+    	}
+    	DataPoint[] history;
+    	double min = 0;
+    	double max = 100;
+    	if (!tempHist.isEmpty()) {
+    		history = new DataPoint[amountOfDataPoints];
+        	DateTime firstDate = tempHist.firstKey();
+        	DateTime lastDate = tempHist.lastKey();
+        	int diffTime = (int) ((lastDate.getMillis() - firstDate.getMillis()) / amountOfDataPoints);
+        	// get 'amountOfDataPoints' amount of data points between first and last date
+        	for (WSc wsc : wscs) {
+        		for (int i = 0; i < amountOfDataPoints - 1; i++) {
+    				DateTime currDate = firstDate.plusMillis(diffTime * i);
+        			if (history[i] == null) {
+        				history[i] = new DataPoint(currDate.toDate(), 
+        						wsc.getUsageOnCertainTime(currDate));
+        			} else {
+        				history[i] = new DataPoint(history[i].getX(), 
+        						history[i].getY() + wsc.getUsageOnCertainTime(currDate));
+        			}
+        		}
+    			if (history[history.length - 1] == null) {
+    				history[history.length - 1] = new DataPoint(lastDate.toDate(), 
+    						wsc.getUsageOnCertainTime(lastDate));
+    			} else {
+    				history[history.length - 1] = new DataPoint(history[history.length - 1].getX(), 
+    						history[history.length - 1].getY() + wsc.getUsageOnCertainTime(lastDate));
+    			}
+        	}
+        	min = Double.MAX_VALUE;
+        	max = 0;
+        	// find max and min values
+        	for (DataPoint point : history) {
+        		if (point.getY() < min) {
+        			min = point.getY();
+        		} else if (point.getY() > max) {
+        			max = point.getY();
+        		}
+        	}
+    	} else {
+    		history = new DataPoint[2];
+    		history[0] = new DataPoint(now.withTimeAtStartOfDay().toDate(), 0);
+    		history[1] = new DataPoint(now.plusDays(1).withTimeAtStartOfDay().minusMillis(1).toDate(), 0);
+    	}
+    	// draw graph with data
+    	LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(history);
+		series.setDrawBackground(true);
+		graph.addSeries(series);
+		
+		// set date label formatter
+        graph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {
+        	@Override
+            public String formatLabel(double value, boolean isValueX) {
+                if (isValueX) {
+                    // show normal x values
+                    return new DateAsXAxisLabelFormatter(context, new SimpleDateFormat("HH:mm")).formatLabel(value, isValueX);
+                } else {
+                    // show currency for y values
+                    return super.formatLabel(value, isValueX) + " watt";
+                }
+            }
+        });
+        graph.getGridLabelRenderer().setNumHorizontalLabels(5);       
+        graph.getViewport().setMinY(0);
+        graph.getViewport().setMaxY(max + ((max - min) / 10));
+        graph.getViewport().setYAxisBoundsManual(true);
+        graph.getViewport().setMinX(history[0].getX());
+        graph.getViewport().setMaxX(history[history.length-1].getX());
+        graph.getViewport().setXAxisBoundsManual(true);   	
+    }
+    
+    public static void buildGraphRandom(int min, int max, final Context context, GraphView graph, boolean turnedOn) {
     	DataPoint[] history = getRandomDataPoints(min, max);
     	if(!turnedOn) {
 	    	for(int i = history.length-1; i > history.length-4; i--) {

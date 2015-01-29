@@ -19,5 +19,8 @@
     <string name="refresh">Refresh</string>
     
     <string name="my_devices">My Devices</string>
+    
+    <string name="usage_image">Power usage image</string>    
+    
 
 </resources>

@@ -25,6 +25,7 @@ public final class FileUtils {
 			wsc.setTurnedOn(false);
 			wsc.setBusy(false);
 			wsc.setColor(ColorType.NONE);
+			wsc.setHistory(null);
 		}
 		FileOutputStream fileOut = c.openFileOutput(WSC_LIST_PATH, Context.MODE_PRIVATE);
 		ObjectOutputStream out = new ObjectOutputStream(fileOut);

@@ -10,7 +10,6 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -108,20 +107,18 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 			wsc.setTurnedOn(succes);
 			clientList.get(wsc).getSocketColor();
 		} else if (type.equals(ValueType.VALUES_POWER)) {
-			if(!value.equals("-1") && value instanceof HashMap<?,?>) {		
-				// Asume object is large string with format:
-				// 4865448654,230;7896546451,290;12354,200;”
+			if(!value.equals("-1") && value instanceof LinkedHashMap<?,?>) {		
 				succes = true;
-				wsc.setHistory((HashMap<DateTime, Integer>) value);
+				wsc.addHistory((LinkedHashMap<DateTime, Double>) value);
 			} else {
 				// Problem
 			}
 		} else if (type.equals(ValueType.VALUES_COLOR)) {
-			succes = true;
 			String valuee = value.toString();
 			if (valuee != null) {
 				ColorType color = ColorType.getType(valuee);
 				if (color != null) {
+					succes = true;
 					wsc.setColor(color);
 				}
 			}
@@ -131,7 +128,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 				wsc.setConnected(true);
 				clientList.get(wsc).socketIsOn();
 				clientList.get(wsc).getSocketColor();
-				//TODO clientList.get(wsc).getPowerValues();
+				clientList.get(wsc).getPowerValues(wsc.getLastSampleTime());
 				toast = true;
 			} else { 
 				// problem
@@ -259,7 +256,6 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 
 	/**
 	 * Gets the current color of every connected WSc.<br>
-	 * Array can contain nulls when the device(s) do(es) not respond.
 	 * 
 	 * @return the array of color types
 	 */
@@ -271,13 +267,12 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 
 	/**
 	 * Gets the current color of every connected WSc.<br>
-	 * Array can contain nulls when the device(s) do(es) not respond.
 	 * 
 	 * @return the array of color types
 	 */
 	public void getDevicesValues() {		
-		for (SocketClient client : clientList.values()) {	
-			client.getPowerValues();
+		for (WSc wsc : clientList.keySet()) {	
+			clientList.get(wsc).getPowerValues(wsc.getLastSampleTime());
 		}
 	}
 
