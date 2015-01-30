@@ -249,12 +249,12 @@ public class WscActivity extends ActionBarActivity implements SCMCallback {
 			tv1.setText("Powered on for: " + ((poweredOnMilis < 60000) ? ((int)(poweredOnMilis / 1000) + " secs.") : (poweredOnMilis < 3600000) ? ((int)(poweredOnMilis / 60000) + " min.") : ((int)(poweredOnMilis / 3600000) + " hours")));
 			tv2.setText("Current power draw: "+ f.format(currentPowerDraw) + " watt");
 		} else {
-			if (!wsc.isTurnedOn()) {
-				tv1.setText("The device is currently powered off");
-				tv2.setText("Current power draw: 0.00 watt");
-			} else {
+			if (!wsc.isConnected()) {
 				tv1.setText("The device is currently not connected");
 				tv2.setText("Current power draw: unknown");
+			} else {
+				tv1.setText("The device is currently powered off");
+				tv2.setText("Current power draw: 0.00 watt");
 			}
 		}
 		f = new DecimalFormat("0.000");
