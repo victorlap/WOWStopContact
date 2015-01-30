@@ -290,7 +290,7 @@ public class MainActivity extends ActionBarActivity implements SCMCallback {
 			Tools.buildGraphRandom(10*n, 50*n, this, graph, true);
 			buildFakeText(n);
 		} else {
-			Tools.buildGraphReal(this, graph, manager.getDevices(), 20);
+			Tools.buildGraphReal(this, graph, manager.getDevices());
 			buildRealText(wscs);
 		}
 	}
@@ -313,14 +313,16 @@ public class MainActivity extends ActionBarActivity implements SCMCallback {
 
 		DecimalFormat f = new DecimalFormat("#.##");
 		if(wscs.size() > 0) {
-			tv2.setText("Current power draw: "+ f.format(currentPowerDraw) + " watt");
+			tv1.setVisibility(View.GONE);
+			tv2.setText("Current total power draw: "+ f.format(currentPowerDraw) + " watt");
 		} else {
+			tv1.setVisibility(View.VISIBLE);
 			tv1.setText("There are no devices currently on");
-			tv2.setText("Current power draw: 0.00 watt");
+			tv2.setText("Current total power draw: 0.00 watt");
 		}
 		f = new DecimalFormat("0.000");
 		DecimalFormat eu = new DecimalFormat("0.00");
-		tv3.setText("Daily power draw: "+ f.format(dailyUsage) +" kWh ~ €"+ eu.format(dailyUsage*0.23));
+		tv3.setText("Daily total power draw: "+ f.format(dailyUsage) +" kWh ~ €"+ eu.format(dailyUsage*0.23));
 		f = new DecimalFormat("#");
 		tv4.setText("Yearly estimate: "+ f.format(yearlyEstimate) +" kWh ~ €"+ eu.format(yearlyEstimate*0.23));
 	}

@@ -181,6 +181,9 @@ public class WSc implements Serializable {
 	 * @return the time in ms
 	 */
 	public double getPowerOnTime() {
+		if (!hasHistory()) {
+			return 0;
+		} 
 		double totalDuration = 0; // in ms
 		DateTime lastTime = null;
 		for (DateTime date : history.keySet()) {

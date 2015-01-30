@@ -53,13 +53,13 @@ public class Tools {
         while (System.nanoTime() - currTime <= sleepTime);
     }
     
-    public static void buildGraphReal(final Context context, GraphView graph, WSc wsc, int amountOfDataPoints) { 
+    public static void buildGraphReal(final Context context, GraphView graph, WSc wsc) { 
     	List<WSc> wscs = new ArrayList<WSc>();
     	wscs.add(wsc);
-    	buildGraphReal(context, graph, wscs, amountOfDataPoints);
+    	buildGraphReal(context, graph, wscs);
     }
     
-    public static void buildGraphReal(final Context context, GraphView graph, List<WSc> wscs, int amountOfDataPoints) {  
+    public static void buildGraphReal(final Context context, GraphView graph, List<WSc> wscs) {  
     	// first pile up the one day data from all WSc's, than split it in a number of data points
 		TreeMap<DateTime, Double> tempHist = new TreeMap<DateTime, Double>();
     	DateTime now = DateTime.now();
@@ -73,13 +73,13 @@ public class Tools {
     	double min = 0;
     	double max = 100;
     	if (!tempHist.isEmpty()) {
-    		history = new DataPoint[amountOfDataPoints];
         	DateTime firstDate = tempHist.firstKey();
         	DateTime lastDate = tempHist.lastKey();
-        	int diffTime = (int) ((lastDate.getMillis() - firstDate.getMillis()) / amountOfDataPoints);
+    		history = new DataPoint[(int) (100 + 2 * Math.sqrt(tempHist.size()))];
+        	int diffTime = (int) ((lastDate.getMillis() - firstDate.getMillis()) / history.length);
         	// get 'amountOfDataPoints' amount of data points between first and last date
         	for (WSc wsc : wscs) {
-        		for (int i = 0; i < amountOfDataPoints - 1; i++) {
+        		for (int i = 0; i < history.length - 1; i++) {
     				DateTime currDate = firstDate.plusMillis(diffTime * i);
         			if (history[i] == null) {
         				history[i] = new DataPoint(currDate.toDate(), 
@@ -115,6 +115,7 @@ public class Tools {
     	// draw graph with data
     	LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(history);
 		series.setDrawBackground(true);
+		graph.removeAllSeries();
 		graph.addSeries(series);
 		
 		// set date label formatter
@@ -148,6 +149,7 @@ public class Tools {
     	}
     	LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(history);
 		series.setDrawBackground(true);
+		graph.removeAllSeries();
 		graph.addSeries(series);
 
 		// set date label formatter

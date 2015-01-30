@@ -53,11 +53,15 @@ public class WscActivity extends ActionBarActivity implements SCMCallback {
 		graph.setOnClickListener(new OnClickListener() {		
 			@Override
 			public void onClick(View v) {
+				ProgressBar pb = (ProgressBar) findViewById(R.id.progress);
+				pb.setVisibility(View.VISIBLE);
 				buildGraph();				
 			}
 		});
 		startSocketManager();
-
+		if (!wsc.isConnected()) {
+			buildGraph();
+		}
 		createdMenu = false;
 	}
 
@@ -125,8 +129,7 @@ public class WscActivity extends ActionBarActivity implements SCMCallback {
 		if(manager == null) {
 			try {
 				manager = new SocketClientManager(this, this);
-				manager.connect();
-				manager.pauzeAllClientsExcept(wsc);
+				manager.connect(wsc);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -217,42 +220,42 @@ public class WscActivity extends ActionBarActivity implements SCMCallback {
 	}
 	
 	public void buildGraph() {
-		ProgressBar pb = (ProgressBar) findViewById(R.id.progress);
-		pb.setVisibility(View.GONE);
-		GraphView graph = (GraphView) findViewById(R.id.graph);
-		
-		List<WSc> wscs = manager.getDevices();
+		GraphView graph = (GraphView) findViewById(R.id.graph);		
 		if (MainActivity.FAKE_DATA) {
 			Tools.buildGraphRandom(10, 50, this, graph, true);
 			buildFakeText();
 		} else {
-			Tools.buildGraphReal(this, graph, wsc, 20);
-			buildRealText(wscs);
+			Tools.buildGraphReal(this, graph, wsc);
+			buildRealText(wsc);
 		}
+		ProgressBar pb = (ProgressBar) findViewById(R.id.progress);
+		pb.setVisibility(View.GONE);
 	}
 	
-	private void buildRealText(List<WSc> wscs) {	
+	private void buildRealText(WSc wscs) {	
 		TextView tv1 = (TextView) findViewById(R.id.textView1);
 		TextView tv2 = (TextView) findViewById(R.id.textView2);
 		TextView tv3 = (TextView) findViewById(R.id.textView3);
 		TextView tv4 = (TextView) findViewById(R.id.textView4);
 		
-		double currentPowerDraw = 0;
-		double dailyUsage = 0;
-		double yearlyEstimate = 0;
 		DateTime now = DateTime.now();
-		for (WSc wsc : wscs) {
-			currentPowerDraw += wsc.getCurrentPowerDraw();
-			dailyUsage += wsc.getDailyUsage(now);
-			yearlyEstimate += wsc.getYearlyEstimate(now);
-		}
+		double poweredOnMilis = wsc.getPowerOnTime();
+		double currentPowerDraw = wsc.getCurrentPowerDraw();
+		double dailyUsage = wsc.getDailyUsage(now);
+		double yearlyEstimate = wsc.getYearlyEstimate(now);
 
 		DecimalFormat f = new DecimalFormat("#.##");
-		if(wscs.size() > 0) {
+		if(wsc.isConnected() && wsc.isTurnedOn()) {
+			tv1.setText("Powered on for: " + ((poweredOnMilis < 60000) ? ((int)(poweredOnMilis / 1000) + " secs.") : (poweredOnMilis < 3600000) ? ((int)(poweredOnMilis / 60000) + " min.") : ((int)(poweredOnMilis / 3600000) + " hours")));
 			tv2.setText("Current power draw: "+ f.format(currentPowerDraw) + " watt");
 		} else {
-			tv1.setText("There are no devices currently on");
-			tv2.setText("Current power draw: 0.00 watt");
+			if (!wsc.isTurnedOn()) {
+				tv1.setText("The device is currently powered off");
+				tv2.setText("Current power draw: 0.00 watt");
+			} else {
+				tv1.setText("The device is currently not connected");
+				tv2.setText("Current power draw: unknown");
+			}
 		}
 		f = new DecimalFormat("0.000");
 		DecimalFormat eu = new DecimalFormat("0.00");
@@ -274,7 +277,7 @@ public class WscActivity extends ActionBarActivity implements SCMCallback {
 			tv2.setText("Current power draw: "+ f.format(rand(10, 50, r)) +"W");
 		} else {
 			tv1.setText("Not currently powered on");
-			tv2.setText("Current power draw: None");
+			tv2.setText("Current power draw: 0.00 watt");
 		}
 		double w = rand(0, 1, r);
 		f = new DecimalFormat("#.#");

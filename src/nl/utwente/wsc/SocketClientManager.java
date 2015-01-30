@@ -69,6 +69,12 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 			}
 		}
 	}
+	
+	public void connect(WSc wsc) {
+		WSc w = getKey(wsc.getHostname());
+		w.setBusy(true);
+		clientList.get(w).connect(w.getHostname(), w.getPort());		
+	}
 
 	public void connect() {
 		for(Entry<WSc, SocketClient> e : clientList.entrySet()) {
@@ -112,6 +118,13 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 				succes = true;
 				wsc.addHistory((LinkedHashMap<DateTime, Double>) value);
 				structuralChange = true;
+			} else if (value instanceof String[]) {
+				// broadcast update
+				succes = true;
+				String[] entry = (String[])value;
+				wsc.addHistory(new DateTime(Long.parseLong(entry[0])), 
+						Double.parseDouble(entry[1]));
+				structuralChange = true;
 			} else {
 				// Problem
 			}
@@ -137,6 +150,8 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 			}
 		} else if (type.equals(ValueType.DISCONNECTING)) {
 			if (succes) {
+				wsc.setHistory(null);
+				structuralChange = true;
 				wsc.setConnected(false);
 				toast = true;
 			} else { 
@@ -145,10 +160,11 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 		} else if (type.equals(ValueType.CONN_DEAD)) {
 			wsc.setConnected(false);
 			wsc.setTurnedOn(false);
+			wsc.setHistory(null);
 			active = false;
 			toast = true;
 			done = false;
-			callback.updateList(false);
+			callback.updateList(true);
 		} else {
 			return;
 		}

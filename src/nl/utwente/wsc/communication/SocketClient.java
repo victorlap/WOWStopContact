@@ -192,6 +192,9 @@ public class SocketClient {
         } else if (command.getCommand().equalsIgnoreCase("turnOff")) {
         	callBack.doneTask(address.getHostAddress(), 
         			ValueType.TURN_OFF, true);	
+        } else if (command.getCommand().equalsIgnoreCase("addValue")) {
+        	callBack.doneTask(address.getHostAddress(), 
+        			ValueType.VALUES_POWER, command.getArguments());	        	
         }
     }
     
@@ -333,6 +336,10 @@ class AsyncCommunication extends AsyncTask<String, Integer, Object> {
 		            return null;
 		        }
 		        String data = new String(ans.getData());
+		        // no (new) power values
+		        if (data.length() == 0) {
+		        	return null;
+		        }
 		        String[] valuePairs = data.split(";");
 		        Map<DateTime, Double> values = new LinkedHashMap<DateTime, Double>();
 		        for (String valuePair : valuePairs) {
@@ -341,10 +348,6 @@ class AsyncCommunication extends AsyncTask<String, Integer, Object> {
 		        		values.put(new DateTime(Long.parseLong(splitted[0])), Double.parseDouble(splitted[1]));
 		        	} catch (Exception e) {
 		        		Log.e(this.toString(), "invalid value pair: " + valuePair);
-		        	}
-		        	if(values.size() > 100) {
-		        		returnValue = values;
-		        		break;
 		        	}
 		        }
 		        returnValue = values;
