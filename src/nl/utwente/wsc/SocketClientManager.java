@@ -143,7 +143,8 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 				wsc.setConnected(true);
 				clientList.get(wsc).socketIsOn();
 				clientList.get(wsc).getSocketColor();
-				clientList.get(wsc).getPowerValues(wsc.getLastSampleTime());
+				clientList.get(wsc).getPowerValues(
+						wsc.getHistoryLength() > 3 ? wsc.getLastSampleTime() : 0);
 				toast = true;
 			} else { 
 				// problem

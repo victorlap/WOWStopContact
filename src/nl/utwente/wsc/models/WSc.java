@@ -281,7 +281,7 @@ public class WSc implements Serializable {
 	}
 	
 	public int getHistoryLength() {
-		return history.size();
+		return hasHistory() ? history.size() : 0;
 	}
 	
 	@Override

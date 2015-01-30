@@ -147,7 +147,8 @@ public class MainActivity extends ActionBarActivity implements SCMCallback {
 				entry.getValue().socketIsOn();
 				entry.getValue().getSocketColor();
 				entry.getValue().getPowerValues(
-						entry.getKey().getLastSampleTime());
+						entry.getKey().getHistoryLength() > 3 ? 
+								entry.getKey().getLastSampleTime() : 0);
 			} else {
 				try {
 					entry.getValue().connect(entry.getKey());
