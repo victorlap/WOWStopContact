@@ -147,7 +147,10 @@ public class WSc implements Serializable {
 		} 		
 		boolean isFirst = true;
 		for (DateTime date : history.keySet()) {
-			if (!date.isBefore(time)) {
+			if (date.isEqual(time)) {
+				return history.get(date);
+			}
+			if (date.isAfter(time)) {
 				if (isFirst) {
 					// we don't know the usage before the first value
 					return 0; 

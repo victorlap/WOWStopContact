@@ -2,7 +2,10 @@ package nl.utwente.wsc;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.List;
 import java.util.Random;
+
+import org.joda.time.DateTime;
 
 import nl.utwente.wsc.SocketClientManager.SCMCallback;
 import nl.utwente.wsc.models.WSc;
@@ -45,12 +48,16 @@ public class WscActivity extends ActionBarActivity implements SCMCallback {
 		wsc = (WSc) i.getSerializableExtra(MainActivity.EXTRA_WSC);
 
 		setTitle(wsc.getName());
-
+		
+		GraphView graph = (GraphView) findViewById(R.id.graph);
+		graph.setOnClickListener(new OnClickListener() {		
+			@Override
+			public void onClick(View v) {
+				buildGraph();				
+			}
+		});
 		startSocketManager();
 
-		buildGraph();
-
-		buildText();
 		createdMenu = false;
 	}
 
@@ -208,15 +215,53 @@ public class WscActivity extends ActionBarActivity implements SCMCallback {
 
 		dialog.show();
 	}
-
-	private void buildGraph() {
-			ProgressBar pb = (ProgressBar) findViewById(R.id.progress);
-			pb.setVisibility(View.GONE);
-			GraphView graph = (GraphView) findViewById(R.id.graph);
-			//Tools.buildGraph(10, 50, this, graph, wsc.isTurnedOn());
+	
+	public void buildGraph() {
+		ProgressBar pb = (ProgressBar) findViewById(R.id.progress);
+		pb.setVisibility(View.GONE);
+		GraphView graph = (GraphView) findViewById(R.id.graph);
+		
+		List<WSc> wscs = manager.getDevices();
+		if (MainActivity.FAKE_DATA) {
+			Tools.buildGraphRandom(10, 50, this, graph, true);
+			buildFakeText();
+		} else {
+			Tools.buildGraphReal(this, graph, wsc, 20);
+			buildRealText(wscs);
+		}
 	}
 	
-	private void buildText() {
+	private void buildRealText(List<WSc> wscs) {	
+		TextView tv1 = (TextView) findViewById(R.id.textView1);
+		TextView tv2 = (TextView) findViewById(R.id.textView2);
+		TextView tv3 = (TextView) findViewById(R.id.textView3);
+		TextView tv4 = (TextView) findViewById(R.id.textView4);
+		
+		double currentPowerDraw = 0;
+		double dailyUsage = 0;
+		double yearlyEstimate = 0;
+		DateTime now = DateTime.now();
+		for (WSc wsc : wscs) {
+			currentPowerDraw += wsc.getCurrentPowerDraw();
+			dailyUsage += wsc.getDailyUsage(now);
+			yearlyEstimate += wsc.getYearlyEstimate(now);
+		}
+
+		DecimalFormat f = new DecimalFormat("#.##");
+		if(wscs.size() > 0) {
+			tv2.setText("Current power draw: "+ f.format(currentPowerDraw) + " watt");
+		} else {
+			tv1.setText("There are no devices currently on");
+			tv2.setText("Current power draw: 0.00 watt");
+		}
+		f = new DecimalFormat("0.000");
+		DecimalFormat eu = new DecimalFormat("0.00");
+		tv3.setText("Daily power draw: "+ f.format(dailyUsage) +" kWh ~ €"+ eu.format(dailyUsage*0.23));
+		f = new DecimalFormat("#");
+		tv4.setText("Yearly estimate: "+ f.format(yearlyEstimate) +" kWh ~ €"+ eu.format(yearlyEstimate*0.23));
+	}
+	
+	private void buildFakeText() {
 		TextView tv1 = (TextView) findViewById(R.id.textView1);
 		TextView tv2 = (TextView) findViewById(R.id.textView2);
 		TextView tv3 = (TextView) findViewById(R.id.textView3);
@@ -245,7 +290,7 @@ public class WscActivity extends ActionBarActivity implements SCMCallback {
 	}
 	
 	@Override
-	public void updateList() {
+	public void updateList(final boolean updateGraph) {
 		final WSc wscRef = wsc; 
 		if (wsc == null) {
 			return;
@@ -253,6 +298,9 @@ public class WscActivity extends ActionBarActivity implements SCMCallback {
 		runOnUiThread(new Runnable() {		
 			@Override
 			public void run() {
+				if (updateGraph) {
+					buildGraph();
+				}
 				ToggleButton tb = (ToggleButton) findViewById(R.id.switchForActionBar);
 				ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressForActionBar);
 				try {

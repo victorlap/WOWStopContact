@@ -9,10 +9,8 @@ import android.graphics.Color;
 import android.support.v7.widget.SwitchCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
@@ -75,7 +73,7 @@ public class WscAdapter extends ArrayAdapter<WSc> {
 					Log.v("WSC", "Name: "+ wsc.getName() +" isChecked: "+ turnOn);
 					manager.setDeviceState(wsc, turnOn);
 					wsc.setTurnedOn(turnOn);
-					mainActivity.updateList();				
+					mainActivity.updateList(false);				
 				}
 			});
 			

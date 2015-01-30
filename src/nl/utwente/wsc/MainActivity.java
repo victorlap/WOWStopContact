@@ -81,11 +81,9 @@ public class MainActivity extends ActionBarActivity implements SCMCallback {
 				toggle_devices.setChecked(false);
 				toggle_devices.setEnabled(false);
 				manager.setDevicesState(false);
-				updateList();
+				updateList(false);
 			}
 		});
-
-		buildGraph();
 	}
 
 	@Override
@@ -144,7 +142,7 @@ public class MainActivity extends ActionBarActivity implements SCMCallback {
     private void refreshDevices() {
 		for (Entry<WSc, SocketClient> entry : manager.getEntries()) {
 			entry.getKey().setBusy(true);
-			updateList();    	
+			updateList(false);    	
 			if (entry.getKey().isConnected()) {
 				entry.getValue().socketIsOn();
 				entry.getValue().getSocketColor();
@@ -175,11 +173,14 @@ public class MainActivity extends ActionBarActivity implements SCMCallback {
 		manager.stop();
 	}
 
-	public void updateList() {
+	public void updateList(final boolean updateGraph) {
 		list = manager.getDevices();
 		runOnUiThread(new Runnable() {
 			public void run() {
 				adapter.updateList(manager.getDevices());
+				if (updateGraph) {
+					buildGraph();
+				}
 			}
 		});
 	}
@@ -231,7 +232,7 @@ public class MainActivity extends ActionBarActivity implements SCMCallback {
 
 					WSc wsc = new WSc(nameBox.getText().toString(), hostnameBox.getText().toString(), port);
 					manager.addDevice(wsc);
-					updateList();
+					updateList(false);
 					dialog.dismiss();
 				} else {
 					Toast.makeText(getApplication(), "Please fill in correct values", Toast.LENGTH_SHORT).show();

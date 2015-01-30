@@ -36,7 +36,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 
 	public interface SCMCallback {
 		public void toastMessage(final Context context, final String message, final boolean displayLong);
-		public void updateList();
+		public void updateList(boolean dataChange);
 	}
 
 	public static final String TAG = "SocketClientManager";
@@ -89,6 +89,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 		if (wsc == null) {
 			return;
 		}
+		boolean structuralChange = false;
 		boolean succes = false;
 		boolean done = true;
 		if (value == null) {
@@ -110,6 +111,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 			if(!value.equals("-1") && value instanceof LinkedHashMap<?,?>) {		
 				succes = true;
 				wsc.addHistory((LinkedHashMap<DateTime, Double>) value);
+				structuralChange = true;
 			} else {
 				// Problem
 			}
@@ -146,7 +148,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 			active = false;
 			toast = true;
 			done = false;
-			callback.updateList();
+			callback.updateList(false);
 		} else {
 			return;
 		}
@@ -155,7 +157,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 		}		
 		if (done) {
 			wsc.setBusy(false);
-			callback.updateList();
+			callback.updateList(structuralChange);
 		}
 	}
 
@@ -194,7 +196,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 		clientList.get(wsc).disconnect();
 		clientList.remove(wsc);	
 		if (updateList) {
-			callback.updateList();
+			callback.updateList(true);
 		}
 	}
 

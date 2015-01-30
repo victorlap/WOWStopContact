@@ -1,6 +1,7 @@
 package nl.utwente.wsc.utils;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -50,6 +51,12 @@ public class Tools {
     public static void waitForNs(long sleepTime) {
         long currTime = System.nanoTime();
         while (System.nanoTime() - currTime <= sleepTime);
+    }
+    
+    public static void buildGraphReal(final Context context, GraphView graph, WSc wsc, int amountOfDataPoints) { 
+    	List<WSc> wscs = new ArrayList<WSc>();
+    	wscs.add(wsc);
+    	buildGraphReal(context, graph, wscs, amountOfDataPoints);
     }
     
     public static void buildGraphReal(final Context context, GraphView graph, List<WSc> wscs, int amountOfDataPoints) {  
