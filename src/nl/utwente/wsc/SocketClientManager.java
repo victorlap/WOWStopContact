@@ -144,7 +144,7 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 				clientList.get(wsc).socketIsOn();
 				clientList.get(wsc).getSocketColor();
 				clientList.get(wsc).getPowerValues(
-						wsc.getHistoryLength() > 3 ? wsc.getLastSampleTime() : 0);
+						wsc.getHistoryLength() > 10 ? wsc.getLastSampleTime() : 0);
 				toast = true;
 			} else { 
 				// problem
@@ -291,7 +291,8 @@ public class SocketClientManager extends Observable<String> implements OnSocMana
 	 */
 	public void getDevicesValues() {		
 		for (WSc wsc : clientList.keySet()) {	
-			clientList.get(wsc).getPowerValues(wsc.getLastSampleTime());
+			clientList.get(wsc).getPowerValues(
+					wsc.getHistoryLength() > 10 ? wsc.getLastSampleTime() : 0);
 		}
 	}
 

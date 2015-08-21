@@ -21,7 +21,10 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/graph"
         android:background="@color/green"
-        android:paddingLeft="@dimen/activity_horizontal_margin" >
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingStart="@dimen/activity_horizontal_margin"
+        android:paddingEnd="@dimen/activity_horizontal_margin" >
 
         <TextView
             android:id="@+id/wsc_name"

@@ -52,6 +52,7 @@ public class MainActivity extends ActionBarActivity implements SCMCallback {
 
 	private boolean wasPaused;
 
+	onCr
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -147,7 +148,7 @@ public class MainActivity extends ActionBarActivity implements SCMCallback {
 				entry.getValue().socketIsOn();
 				entry.getValue().getSocketColor();
 				entry.getValue().getPowerValues(
-						entry.getKey().getHistoryLength() > 3 ? 
+						entry.getKey().getHistoryLength() > 10 ? 
 								entry.getKey().getLastSampleTime() : 0);
 			} else {
 				try {

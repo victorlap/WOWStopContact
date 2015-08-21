@@ -146,7 +146,7 @@ public class SocketClient {
 	                int i = 0;
 	                try {
 	                    while (i < len && 
-	                            (i += in.read(receiverBuff, i, len - i)) != -1){}
+	                            (i += in.read(receiverBuff, i, len - i)) != -1);
 	                } catch (IOException ex) {
                     	Log.e(this.toString(), "Connection dead");
                         stop = true;
@@ -293,7 +293,7 @@ public class SocketClient {
     
 }
 
-class AsyncCommunication extends AsyncTask<String, Integer, Object> {
+class AsyncCommunication extends FutureTask.<String, Integer, Object> {
 	
 	private SocketClient client;
 	private int timeout;
